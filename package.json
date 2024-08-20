@@ -1,7 +1,8 @@
 {
   "name": "get-a-move-on",
   "version": "1.0.0",
-  "main": "App.js",
+  "main": "./src/App.js",
+  "type": "module",
   "dependencies": {
     "expo-av": "~14.0.6",
     "@expo/vector-icons": "^14.0.2",

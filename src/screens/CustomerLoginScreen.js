@@ -39,7 +39,7 @@ export default function CustomerLoginScreen({ navigation }) {
     const url = "https://studio-api-eu.ai.vonage.com/messaging/conversation";
     const headers = {
       "Content-Type": "application/json",
-      "X-Vgai-Key": "YOUR_ACTUAL_KEY_HERE",
+      "X-Vgai-Key": "value",
     };
     const body = JSON.stringify({
       to: phoneNumber,
