@@ -2,109 +2,42 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
   StyleSheet,
   Alert,
 } from "react-native";
 import {
   getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
 
-export default function CustomerLoginScreen({ navigation }) {
+const CustomerLoginScreen = ({ navigation, route }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("+44");
-  const [otp, setOtp] = useState("");
-  const [showOtp, setShowOtp] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [isSignup, setIsSignup] = useState(route.params?.isSignup || false);
 
-  const handleGmailLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      navigation.navigate("Home");
-    } catch (error) {
-      Alert.alert("Error", error.message);
+  const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
     }
-  };
-
-  const sendOTP = async (phoneNumber, otp) => {
-    const url = "https://studio-api-eu.ai.vonage.com/messaging/conversation";
-    const headers = {
-      "Content-Type": "application/json",
-      "X-Vgai-Key": "value",
-    };
-    const body = JSON.stringify({
-      to: phoneNumber,
-      agent_id: "66c0ec5d5cd447cc0bafda3b",
-      channel: "sms",
-      status_url: "https://webhook.site/cbfe85bb-967c-4636-8314-ceed512e652d",
-      session_parameters: [
-        {
-          name: "otp",
-          value: otp,
-        },
-      ],
-    });
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: body,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("OTP sent successfully:", data);
-      return data;
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      throw error;
-    }
-  };
-
-  const handleManualSignup = async () => {
-    if (!showOtp) {
-      // Generate and send OTP
-      const newOtp = Math.floor(Math.random() * 900000) + 100000;
-      setGeneratedOtp(newOtp.toString());
-      setShowOtp(true);
-      try {
-        await sendOTP(phone, newOtp.toString());
-        Alert.alert("OTP Sent", "Please check your phone for the OTP");
-      } catch (error) {
-        Alert.alert("Error", "Failed to send OTP. Please try again.");
-      }
-    } else {
-      // Verify OTP
-      if (otp === generatedOtp) {
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          navigation.navigate("Home");
-        } catch (error) {
-          Alert.alert("Error", error.message);
+      if (isSignup) {
+        if (!name) {
+          Alert.alert("Error", "Please enter your name");
+          return;
         }
+        await createUserWithEmailAndPassword(auth, email, password);
+        // Here you would typically save additional user info to your database
       } else {
-        Alert.alert("Error", "Invalid OTP");
+        await signInWithEmailAndPassword(auth, email, password);
       }
-    }
-  };
-
-  const handleManualLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate("Home");
+      navigation.navigate("Home", { userType: "customer" });
     } catch (error) {
       Alert.alert("Error", error.message);
     }
@@ -112,10 +45,15 @@ export default function CustomerLoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={handleGmailLogin}>
-        <Text style={styles.buttonText}>Login with Gmail</Text>
-      </TouchableOpacity>
-
+      <Text style={styles.title}>{isSignup ? "Sign Up" : "Login"}</Text>
+      {isSignup && (
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
+        />
+      )}
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -130,55 +68,32 @@ export default function CustomerLoginScreen({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
       />
-
-      {!showOtp && (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
-        </>
-      )}
-
-      {showOtp && (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter OTP"
-          value={otp}
-          onChangeText={setOtp}
-          keyboardType="number-pad"
-        />
-      )}
-
-      <TouchableOpacity style={styles.button} onPress={handleManualSignup}>
-        <Text style={styles.buttonText}>
-          {showOtp ? "Verify OTP" : "Sign Up"}
-        </Text>
+      <TouchableOpacity style={styles.button} onPress={handleAuth}>
+        <Text style={styles.buttonText}>{isSignup ? "Sign Up" : "Login"}</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleManualLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+        <Text style={styles.switchText}>
+          {isSignup
+            ? "Already have an account? Login"
+            : "Don't have an account? Sign Up"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
     padding: 20,
+    backgroundColor: "#F5F5F5",
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    fontWeight: "bold",
   },
   input: {
     width: "100%",
@@ -196,11 +111,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 10,
+    marginTop: 10,
   },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
+  switchText: {
+    marginTop: 20,
+    color: "#4A90E2",
+  },
 });
+
+export default CustomerLoginScreen;

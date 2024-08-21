@@ -1,20 +1,31 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function LoginChoiceScreen({ navigation }) {
+export default function LoginChoiceScreen({ navigation, route }) {
+  const { userType } = route.params;
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: "#FA7454" }]}
-        onPress={() => navigation.navigate("CustomerLogin")}
+        onPress={() =>
+          navigation.navigate(
+            userType === "customer" ? "CustomerLogin" : "DriverLogin"
+          )
+        }
       >
-        <Text style={styles.buttonText}>Get it Delivered</Text>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: "#4A90E2" }]}
-        onPress={() => navigation.navigate("DriverLogin")}
+        onPress={() =>
+          navigation.navigate(
+            userType === "customer" ? "CustomerLogin" : "DriverLogin",
+            { isSignup: true }
+          )
+        }
       >
-        <Text style={styles.buttonText}>Deliver an Item</Text>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );

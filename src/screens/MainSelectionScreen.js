@@ -6,13 +6,17 @@ const MainSelectionScreen = ({ navigation }) => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("CustomerLogin")}
+        onPress={() =>
+          navigation.navigate("LoginChoice", { userType: "customer" })
+        }
       >
         <Text style={styles.buttonText}>Get it Delivered</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("DriverLogin")}
+        onPress={() =>
+          navigation.navigate("LoginChoice", { userType: "driver" })
+        }
       >
         <Text style={styles.buttonText}>Deliver an Item</Text>
       </TouchableOpacity>

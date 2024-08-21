@@ -5,26 +5,30 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 
-export default function SelectItemScreen({ navigation, route }) {
+const SelectItemScreen = ({ navigation, route }) => {
   const [itemName, setItemName] = useState("");
   const [itemDescription, setItemDescription] = useState("");
-  const [pickupLocation, setPickupLocation] = useState("");
+  const { dropOffLocation, itemType } = route.params;
 
   const handleContinue = () => {
-    // Here, you can save the item details and navigate to the next screen
-    navigation.navigate("ConfirmAssignmentScreen", {
-      ...route.params,
-      itemName,
-      itemDescription,
-      pickupLocation,
-    });
+    if (itemName && itemDescription) {
+      navigation.navigate("PickupLocation", {
+        dropOffLocation,
+        itemType,
+        itemName,
+        itemDescription,
+      });
+    } else {
+      alert("Please fill in all fields");
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Enter Item Details</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Item Details</Text>
       <TextInput
         style={styles.input}
         placeholder="Item Name"
@@ -32,53 +36,54 @@ export default function SelectItemScreen({ navigation, route }) {
         onChangeText={setItemName}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.multilineInput]}
         placeholder="Item Description"
         value={itemDescription}
         onChangeText={setItemDescription}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Pickup Location"
-        value={pickupLocation}
-        onChangeText={setPickupLocation}
+        multiline
+        numberOfLines={4}
       />
       <TouchableOpacity style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Continue</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
     padding: 20,
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   input: {
-    width: "100%",
+    width: 358,
     height: 48,
     borderColor: "#CCCCCC",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 10,
+    marginBottom: 20,
+  },
+  multilineInput: {
+    height: 100,
+    textAlignVertical: "top",
+    paddingTop: 10,
   },
   button: {
-    width: "100%",
+    width: 358,
     height: 48,
     backgroundColor: "#4A90E2",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 10,
   },
   buttonText: {
     color: "#FFFFFF",
@@ -86,3 +91,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+export default SelectItemScreen;

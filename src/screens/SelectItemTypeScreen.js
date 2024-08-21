@@ -1,27 +1,32 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Picker } from "@react-native-picker/picker"; // Make sure to install this package
+import { Picker } from "@react-native-picker/picker";
 
-export default function SelectItemTypeScreen({ navigation, route }) {
+const SelectItemTypeScreen = ({ navigation, route }) => {
   const [itemType, setItemType] = useState("");
+  const { dropOffLocation } = route.params;
 
   const handleContinue = () => {
-    navigation.navigate("SelectItemScreen", { ...route.params, itemType });
+    if (itemType) {
+      navigation.navigate("SelectItem", { dropOffLocation, itemType });
+    } else {
+      alert("Please select an item type");
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Select Item Type</Text>
+      <Text style={styles.title}>Select Item Type</Text>
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={itemType}
-          onValueChange={(value) => setItemType(value)}
+          onValueChange={(itemValue) => setItemType(itemValue)}
+          style={styles.picker}
         >
-          <Picker.Item label="Select Item Type" value="" />
-          <Picker.Item label="Document" value="document" />
+          <Picker.Item label="Select item type" value="" />
           <Picker.Item label="Food" value="food" />
-          <Picker.Item label="Clothing" value="clothing" />
           <Picker.Item label="Electronics" value="electronics" />
+          <Picker.Item label="Documents" value="documents" />
           <Picker.Item label="Miscellaneous" value="miscellaneous" />
         </Picker>
       </View>
@@ -30,7 +35,7 @@ export default function SelectItemTypeScreen({ navigation, route }) {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -40,27 +45,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     padding: 20,
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   pickerContainer: {
-    width: "100%",
-    height: 48,
+    width: 358,
     borderColor: "#CCCCCC",
     borderWidth: 1,
     borderRadius: 8,
-    justifyContent: "center",
     marginBottom: 20,
   },
+  picker: {
+    width: 358,
+    height: 48,
+  },
   button: {
-    width: "100%",
+    width: 358,
     height: 48,
     backgroundColor: "#4A90E2",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 10,
   },
   buttonText: {
     color: "#FFFFFF",
@@ -68,3 +75,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+export default SelectItemTypeScreen;

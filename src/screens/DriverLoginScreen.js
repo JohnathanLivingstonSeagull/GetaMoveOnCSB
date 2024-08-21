@@ -2,52 +2,44 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
   StyleSheet,
   Alert,
 } from "react-native";
 import {
   getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
 
-export default function DriverLoginScreen({ navigation }) {
+const DriverLoginScreen = ({ navigation, route }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [hobby, setHobby] = useState("");
-  const [postcode, setPostcode] = useState("");
-  const [language, setLanguage] = useState("");
+  const [vehicleType, setVehicleType] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [isSignup, setIsSignup] = useState(route.params?.isSignup || false);
 
-  const handleGmailLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      navigation.navigate("Home");
-    } catch (error) {
-      Alert.alert("Error", error.message);
+  const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
     }
-  };
 
-  const handleManualSignup = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // Here you would typically save the additional driver information to your database
-      navigation.navigate("Home");
-    } catch (error) {
-      Alert.alert("Error", error.message);
-    }
-  };
-
-  const handleManualLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate("Home");
+      if (isSignup) {
+        if (!name || !vehicleType || !licenseNumber) {
+          Alert.alert("Error", "Please fill in all fields");
+          return;
+        }
+        await createUserWithEmailAndPassword(auth, email, password);
+        // How to save additional driver info to your database????
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      navigation.navigate("Home", { userType: "driver" });
     } catch (error) {
       Alert.alert("Error", error.message);
     }
@@ -55,10 +47,31 @@ export default function DriverLoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={handleGmailLogin}>
-        <Text style={styles.buttonText}>Login/Sign up with Gmail</Text>
-      </TouchableOpacity>
-
+      <Text style={styles.title}>
+        {isSignup ? "Driver Sign Up" : "Driver Login"}
+      </Text>
+      {isSignup && (
+        <>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Vehicle Type"
+            value={vehicleType}
+            onChangeText={setVehicleType}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="License Number"
+            value={licenseNumber}
+            onChangeText={setLicenseNumber}
+          />
+        </>
+      )}
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -73,49 +86,32 @@ export default function DriverLoginScreen({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Hobby"
-        value={hobby}
-        onChangeText={setHobby}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Preferred Postcode"
-        value={postcode}
-        onChangeText={setPostcode}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Language"
-        value={language}
-        onChangeText={setLanguage}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleManualSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity style={styles.button} onPress={handleAuth}>
+        <Text style={styles.buttonText}>{isSignup ? "Sign Up" : "Login"}</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleManualLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+        <Text style={styles.switchText}>
+          {isSignup
+            ? "Already have an account? Login"
+            : "Don't have an account? Sign Up"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
     padding: 20,
+    backgroundColor: "#F5F5F5",
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    fontWeight: "bold",
   },
   input: {
     width: "100%",
@@ -133,11 +129,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    marginBottom: 10,
+    marginTop: 10,
   },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
+  switchText: {
+    marginTop: 20,
+    color: "#FA7454",
+  },
 });
+
+export default DriverLoginScreen;

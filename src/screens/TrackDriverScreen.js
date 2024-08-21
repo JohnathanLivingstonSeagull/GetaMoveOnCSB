@@ -1,120 +1,104 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import ErrorDisplayComponent from "../../ErrorDisplayComponent";
+import LoadingDisplayComponent from "../../LoadingDisplayComponent";
 
-const TrackDriverScreen = ({ navigation, route }) => {
-  const {
-    dropOffLocation,
-    itemName,
-    itemDescription,
-    pickupLocation,
-    requiresSafe,
-    safeCode,
-  } = route.params;
+const GOOGLE_MAPS_API_KEY = "AIzaSyBd0sVEWWWTyztYX30VYtToIglg_g4LP4U";
+
+const TrackDriverScreen = ({ route }) => {
+  const { deliveryId } = route.params;
   const [driverLocation, setDriverLocation] = useState(null);
-  const [isDriverNearby, setIsDriverNearby] = useState(false);
+  const [destinationLocation, setDestinationLocation] = useState(null);
+  const [estimatedArrival, setEstimatedArrival] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        alert("Permission to access location was denied");
-        return;
-      }
+    fetchDeliveryDetails();
+  }, []);
 
-      // Simulate driver's moving location; replace with real-time updates from a backend in a production app
-      const interval = setInterval(() => {
-        const newLocation = {
-          latitude: 37.78825 + Math.random() * 0.01,
-          longitude: -122.4324 + Math.random() * 0.01,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        };
-        setDriverLocation(newLocation);
+  const fetchDeliveryDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // In a real app, you would fetch this data from your backend
+      // For now, we'll use mock data and simulate an API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+      setDestinationLocation({
+        latitude: 37.78825,
+        longitude: -122.4324,
+      });
+      setEstimatedArrival("15 minutes");
+      setDriverLocation({
+        latitude: 37.78825,
+        longitude: -122.4324,
+      });
+    } catch (err) {
+      setError("Failed to fetch delivery details. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Check if driver is nearby drop-off location
-        const distance = getDistance(
-          { latitude: newLocation.latitude, longitude: newLocation.longitude },
-          {
-            latitude: dropOffLocation.latitude,
-            longitude: dropOffLocation.longitude,
-          }
-        );
-        if (distance < 100) {
-          // within 100 meters
-          setIsDriverNearby(true);
-        } else {
-          setIsDriverNearby(false);
-        }
-      }, 2000);
+  const simulateDriverMovement = () => {
+    setDriverLocation((currentLocation) => {
+      if (!currentLocation) return currentLocation;
+      return {
+        latitude: currentLocation.latitude + (Math.random() - 0.5) * 0.01,
+        longitude: currentLocation.longitude + (Math.random() - 0.5) * 0.01,
+      };
+    });
+  };
 
+  useEffect(() => {
+    if (driverLocation) {
+      const interval = setInterval(simulateDriverMovement, 5000);
       return () => clearInterval(interval);
-    })();
-  }, [dropOffLocation]);
+    }
+  }, [driverLocation]);
 
-  const getDistance = (loc1, loc2) => {
-    // Use Haversine formula or other methods to calculate the distance
-    const R = 6371e3; // metres
-    const φ1 = (loc1.latitude * Math.PI) / 180;
-    const φ2 = (loc2.latitude * Math.PI) / 180;
-    const Δφ = ((loc2.latitude - loc1.latitude) * Math.PI) / 180;
-    const Δλ = ((loc2.longitude - loc1.longitude) * Math.PI) / 180;
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const d = R * c;
-    return d;
-  };
-
-  const handleUnlockSafe = () => {
-    // Handle unlocking the safe, ideally interacting with the smart safe's API
-    alert("Safe is unlocked");
-  };
-
-  const handleConfirmDelivery = () => {
-    navigation.navigate("ConfirmDeliveryScreen");
-  };
+  if (loading)
+    return <LoadingDisplayComponent message="Loading delivery details..." />;
+  if (error)
+    return (
+      <ErrorDisplayComponent message={error} onRetry={fetchDeliveryDetails} />
+    );
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        region={{
-          latitude: driverLocation?.latitude || 37.78825,
-          longitude: driverLocation?.longitude || -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        {driverLocation && (
-          <Marker coordinate={driverLocation} title="Driver" />
-        )}
-        {dropOffLocation && (
+      {driverLocation && (
+        <MapView
+          style={styles.map}
+          region={{
+            ...driverLocation,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          provider="google"
+        >
           <Marker
-            coordinate={dropOffLocation}
-            title="Drop-off Location"
-            pinColor="green"
+            coordinate={driverLocation}
+            title="Driver"
+            description="Current driver location"
           />
-        )}
-      </MapView>
-      {isDriverNearby && (
-        <TouchableOpacity style={styles.button} onPress={handleUnlockSafe}>
-          <Text style={styles.buttonText}>Unlock Safe</Text>
-        </TouchableOpacity>
+          {destinationLocation && (
+            <Marker
+              coordinate={destinationLocation}
+              title="Destination"
+              description="Delivery destination"
+              pinColor="blue"
+            />
+          )}
+        </MapView>
       )}
-      <TouchableOpacity style={styles.button} onPress={handleConfirmDelivery}>
-        <Text style={styles.buttonText}>Confirm Delivery</Text>
-      </TouchableOpacity>
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoText}>
+          Estimated Arrival: {estimatedArrival}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -122,27 +106,25 @@ const TrackDriverScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F5F5F5",
   },
   map: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height,
+    height: Dimensions.get("window").height - 100,
   },
-  button: {
+  infoContainer: {
     position: "absolute",
-    bottom: 50,
-    width: "90%",
-    height: 48,
-    backgroundColor: "#4A90E2",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    alignSelf: "center",
-    marginTop: 10,
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 10,
+    elevation: 5,
   },
-  buttonText: {
-    color: "#FFFFFF",
+  infoText: {
     fontSize: 16,
-    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
