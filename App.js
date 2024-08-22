@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
+import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
 
 // Import screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
@@ -37,6 +38,79 @@ Notifications.setNotificationHandler({
   }),
 });
 
+function ProtectedNavigator() {
+  const { user } = useAuth();
+
+  return (
+    <Stack.Navigator initialRouteName={user ? "Home" : "LogoAnimation"}>
+      {user ? (
+        <>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          {user.role === "customer" ? (
+            <>
+              <Stack.Screen
+                name="SetDropOffLocation"
+                component={SetDropOffLocation}
+              />
+              <Stack.Screen
+                name="SelectItemType"
+                component={SelectItemTypeScreen}
+              />
+              <Stack.Screen name="SelectItem" component={SelectItemScreen} />
+              <Stack.Screen
+                name="PickupLocation"
+                component={PickupLocationScreen}
+              />
+              <Stack.Screen
+                name="OrderSummary"
+                component={OrderSummaryScreen}
+              />
+              <Stack.Screen name="LinkCard" component={LinkCardScreen} />
+              <Stack.Screen
+                name="OrderConfirmation"
+                component={OrderConfirmationScreen}
+              />
+              <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
+              <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
+              <Stack.Screen name="Directions" component={DirectionsScreen} />
+              <Stack.Screen
+                name="ConfirmDropOff"
+                component={ConfirmDropOffScreen}
+              />
+            </>
+          )}
+          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+          <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen
+            name="LogoAnimation"
+            component={LogoAnimationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="MainSelection"
+            component={MainSelectionScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="LoginChoice"
+            component={LoginChoiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="CustomerLogin" component={CustomerLoginScreen} />
+          <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
   const notificationListener = useRef();
   const responseListener = useRef();
@@ -66,62 +140,16 @@ export default function App() {
   }, []);
 
   return (
-    <StripeProvider
-      publishableKey="your_stripe_publishable_key_here"
-      merchantIdentifier="your_merchant_identifier" // Required for Apple Pay
-    >
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="LogoAnimation">
-          <Stack.Screen
-            name="LogoAnimation"
-            component={LogoAnimationScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="MainSelection"
-            component={MainSelectionScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="LoginChoice"
-            component={LoginChoiceScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="CustomerLogin" component={CustomerLoginScreen} />
-          <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen
-            name="SetDropOffLocation"
-            component={SetDropOffLocation}
-          />
-          <Stack.Screen
-            name="SelectItemType"
-            component={SelectItemTypeScreen}
-          />
-          <Stack.Screen name="SelectItem" component={SelectItemScreen} />
-          <Stack.Screen
-            name="PickupLocation"
-            component={PickupLocationScreen}
-          />
-          <Stack.Screen name="OrderSummary" component={OrderSummaryScreen} />
-          <Stack.Screen name="LinkCard" component={LinkCardScreen} />
-          <Stack.Screen
-            name="OrderConfirmation"
-            component={OrderConfirmationScreen}
-          />
-          <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
-          <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
-          <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
-          <Stack.Screen name="Directions" component={DirectionsScreen} />
-          <Stack.Screen
-            name="ConfirmDropOff"
-            component={ConfirmDropOffScreen}
-          />
-          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-          <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </StripeProvider>
+    <AuthProvider>
+      <StripeProvider
+        publishableKey="pk_test_51PqdcXHFArldXYxVOw3jqGz32uE9jftmBSRmejLuBxC357wLEBDRFs3aukJipDLl9EGUCNPIJLxlXHshHLRQ4DEu002UajBIn0"
+        merchantIdentifier="your_merchant_identifier" // Required for Apple Pay
+      >
+        <NavigationContainer>
+          <ProtectedNavigator />
+        </NavigationContainer>
+      </StripeProvider>
+    </AuthProvider>
   );
 }
 
@@ -146,7 +174,7 @@ function scheduleWeeklyReminder() {
   Notifications.scheduleNotificationAsync({
     content: {
       title: "Forgot Lunch in the Fridge Again?",
-      body: "Get it Zoorted for less than a Sausage Roll 🥴!",
+      body: "Get it Zoorted for less than a Sausage Roll :woozy_face:!",
     },
     trigger: {
       weekday: 3, // Wednesday

@@ -13,6 +13,7 @@ import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
+import { useAuth } from "../contexts/AuthContext";
 
 const DriverLoginScreen = ({ navigation, route }) => {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ const DriverLoginScreen = ({ navigation, route }) => {
   const [vehicleType, setVehicleType] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [isSignup, setIsSignup] = useState(route.params?.isSignup || false);
+  const { login } = useAuth();
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -29,16 +31,36 @@ const DriverLoginScreen = ({ navigation, route }) => {
     }
 
     try {
+      let userCredential;
       if (isSignup) {
         if (!name || !vehicleType || !licenseNumber) {
           Alert.alert("Error", "Please fill in all fields");
           return;
         }
-        await createUserWithEmailAndPassword(auth, email, password);
-        // How to save additional driver info to your database????
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        // Here you would save additional driver info to your database
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
       }
+
+      const userData = {
+        id: userCredential.user.uid,
+        email: userCredential.user.email,
+        name: name || userCredential.user.displayName,
+        role: "driver",
+        vehicleType,
+        licenseNumber,
+      };
+
+      await login(userData);
       navigation.navigate("Home", { userType: "driver" });
     } catch (error) {
       Alert.alert("Error", error.message);

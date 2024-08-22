@@ -7,8 +7,8 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { ErrorDisplayComponent } from "../../ErrorDisplayComponent";
-import { LoadingDisplayComponent } from "../../LoadingDisplayComponent";
+import { ErrorDisplayComponent } from "../components/ErrorDisplayComponent";
+import { LoadingDisplayComponent } from "../components/LoadingDisplayComponent";
 
 const UserProfileScreen = ({ navigation }) => {
   const [name, setName] = useState("");

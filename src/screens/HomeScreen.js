@@ -1,12 +1,13 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useAuth } from "../contexts/AuthContext";
 
-const HomeScreen = ({ navigation, route }) => {
-  const { userType } = route.params;
+const HomeScreen = ({ navigation }) => {
+  const { user, logout } = useAuth();
 
   const CustomerView = () => (
     <View>
-      <Text style={styles.welcomeText}>Welcome, Customer!</Text>
+      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("SetDropOffLocation")}
@@ -24,7 +25,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   const DriverView = () => (
     <View>
-      <Text style={styles.welcomeText}>Welcome, Driver!</Text>
+      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ViewRequests")}
@@ -40,9 +41,20 @@ const HomeScreen = ({ navigation, route }) => {
     </View>
   );
 
+  const handleLogout = async () => {
+    await logout();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "LoginChoice" }],
+    });
+  };
+
   return (
     <View style={styles.container}>
-      {userType === "customer" ? <CustomerView /> : <DriverView />}
+      {user.role === "customer" ? <CustomerView /> : <DriverView />}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -67,6 +79,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
     marginBottom: 10,
+  },
+  logoutButton: {
+    width: 358,
+    height: 48,
+    backgroundColor: "#FA7454",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    marginTop: 20,
   },
   buttonText: {
     color: "#FFFFFF",

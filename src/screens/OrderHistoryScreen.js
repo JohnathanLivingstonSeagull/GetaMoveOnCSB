@@ -6,8 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { ErrorDisplayComponent } from "../../ErrorDisplayComponent";
-import { LoadingDisplayComponent } from "../../LoadingdisplayComponents";
+import { ErrorDisplayComponent } from "../components/ErrorDisplayComponent";
+import { LoadingDisplayComponent } from "../components/LoadingDisplayComponent";
 
 const OrderHistoryScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
