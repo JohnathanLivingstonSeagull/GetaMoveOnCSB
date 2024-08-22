@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user data when the app loads
+    // figure out how to check for stored user data when the app loads
     checkUserLoggedIn();
   }, []);
 

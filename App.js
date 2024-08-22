@@ -5,7 +5,6 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
 import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
 
-// Import screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -29,7 +28,7 @@ import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
 const Stack = createStackNavigator();
 
-// Configure notifications
+// Notifs
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
