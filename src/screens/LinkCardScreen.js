@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
-import { LoadingDisplayComponent } from "../LoadingDisplayComponent";
-import { ErrorDisplayComponent } from "../../ErrorDisplayComponent";
+import { LoadingDisplayComponent } from ".src/LoadingDisplayComponent";
+import { ErrorDisplayComponent } from ".src/ErrorDisplayComponent";
 
 const LinkCardScreen = ({ navigation, route }) => {
   const [cardDetails, setCardDetails] = useState(null);
