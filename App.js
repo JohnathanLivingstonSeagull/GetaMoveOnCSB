@@ -8,7 +8,7 @@ import { auth } from "./src/config/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { AuthContext } from "./src/contexts/AuthContext";
 
-// Screen
+// Screen importing
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -32,7 +32,7 @@ import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
 const Stack = createStackNavigator();
 
-// Configure notifications
+// Notification config
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -104,7 +104,7 @@ export default function App() {
   };
 
   if (isLoading) {
-    // You can show a loading screen here if needed
+    // Add loading screen if you have time!
     return null;
   }
 
