@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { globalStyles, colors } from "../styles/globalStyles";
+import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
+import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { createOrder } from "../api";
 
 const OrderSummaryScreen = ({ navigation, route }) => {
   const [price, setPrice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const {
     dropOffLocation,
     pickupLocation,
@@ -19,90 +18,85 @@ const OrderSummaryScreen = ({ navigation, route }) => {
   } = route.params;
 
   useEffect(() => {
-    // In a real app, you would call your backend API here to calculate the price
-    // based on the pickup and dropoff locations
-    const calculatePrice = () => {
-      // Simulating API call with setTimeout
-      setTimeout(() => {
-        // For now, we'll use a random price between $5 and $20
-        const calculatedPrice = (Math.random() * 15 + 5).toFixed(2);
-        setPrice(calculatedPrice);
-        setLoading(false);
-      }, 1500);
-    };
-
     calculatePrice();
-  }, [dropOffLocation, pickupLocation]);
+  }, []);
 
-  const handleConfirmOrder = () => {
-    navigation.navigate("LinkCard", {
-      ...route.params,
-      price,
-    });
+  const calculatePrice = () => {
+    // placeholder whilst backend is being built
+    setLoading(true);
+    setTimeout(() => {
+      const calculatedPrice = (Math.random() * 15 + 5).toFixed(2);
+      setPrice(calculatedPrice);
+      setLoading(false);
+    }, 1000);
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-        <Text>Calculating price...</Text>
-      </View>
-    );
-  }
+  const handleConfirmOrder = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const orderData = {
+        dropOffLocation,
+        pickupLocation,
+        itemType,
+        itemName,
+        itemDescription,
+        price,
+      };
+      const response = await createOrder(orderData);
+      navigation.navigate("OrderConfirmation", { orderId: response.data.id });
+    } catch (err) {
+      setError("Failed to create order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <LoadingDisplayComponent message="Processing..." />;
+  if (error)
+    return <ErrorDisplayComponent message={error} onRetry={calculatePrice} />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Order Summary</Text>
+    <ScrollView style={globalStyles.container}>
+      <Text style={globalStyles.title}>Order Summary</Text>
       <View style={styles.detailsContainer}>
         <Text style={styles.detailText}>Item: {itemName}</Text>
         <Text style={styles.detailText}>Type: {itemType}</Text>
         <Text style={styles.detailText}>Description: {itemDescription}</Text>
-        <Text style={styles.detailText}>Price: ${price}</Text>
+        <Text style={styles.detailText}>Pickup: {pickupLocation.address}</Text>
+        <Text style={styles.detailText}>
+          Drop-off: {dropOffLocation.address}
+        </Text>
+        <Text style={[styles.detailText, styles.priceText]}>
+          Price: ${price}
+        </Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleConfirmOrder}>
-        <Text style={styles.buttonText}>Confirm Order</Text>
+      <TouchableOpacity
+        style={globalStyles.button}
+        onPress={handleConfirmOrder}
+      >
+        <Text style={globalStyles.buttonText}>Confirm Order</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+const styles = {
   detailsContainer: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     padding: 20,
     borderRadius: 8,
     marginBottom: 20,
-    width: "100%",
   },
   detailText: {
     fontSize: 16,
     marginBottom: 10,
   },
-  button: {
-    width: 358,
-    height: 48,
-    backgroundColor: "#4A90E2",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
+  priceText: {
     fontWeight: "bold",
+    color: colors.primary,
+    fontSize: 18,
   },
-});
+};
 
 export default OrderSummaryScreen;

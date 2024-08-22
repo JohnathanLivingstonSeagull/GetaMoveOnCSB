@@ -23,11 +23,13 @@ import com.reactnativestripesdk.addresssheet.AddressSheetView
 import com.reactnativestripesdk.utils.*
 import com.reactnativestripesdk.utils.createError
 import com.reactnativestripesdk.utils.createResult
+import com.stripe.android.ExperimentalAllowsRemovalOfLastSavedPaymentMethodApi
 import com.stripe.android.paymentsheet.*
 import kotlinx.coroutines.CompletableDeferred
 import java.io.ByteArrayOutputStream
 import kotlin.Exception
 
+@OptIn(ExperimentalAllowsRemovalOfLastSavedPaymentMethodApi::class)
 class PaymentSheetFragment(
   private val context: ReactApplicationContext,
   private val initPromise: Promise
@@ -41,7 +43,7 @@ class PaymentSheetFragment(
   private var confirmPromise: Promise? = null
   private var presentPromise: Promise? = null
   private var paymentSheetTimedOut = false
-  internal val paymentSheetIntentCreationCallback = CompletableDeferred<ReadableMap>()
+  internal var paymentSheetIntentCreationCallback = CompletableDeferred<ReadableMap>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -67,6 +69,8 @@ class PaymentSheetFragment(
     val allowsDelayedPaymentMethods = arguments?.getBoolean("allowsDelayedPaymentMethods")
     val billingDetailsBundle = arguments?.getBundle("defaultBillingDetails")
     val billingConfigParams = arguments?.getBundle("billingDetailsCollectionConfiguration")
+    val paymentMethodOrder = arguments?.getStringArrayList("paymentMethodOrder")
+    val allowsRemovalOfLastSavedPaymentMethod = arguments?.getBoolean("allowsRemovalOfLastSavedPaymentMethod", true) ?: true
     paymentIntentClientSecret = arguments?.getString("paymentIntentClientSecret").orEmpty()
     setupIntentClientSecret = arguments?.getString("setupIntentClientSecret").orEmpty()
     intentConfiguration = try {
@@ -144,6 +148,8 @@ class PaymentSheetFragment(
       stripeSdkModule.sendEvent(context, "onConfirmHandlerCallback", params)
 
       val resultFromJavascript = paymentSheetIntentCreationCallback.await()
+      // reset the completable
+      paymentSheetIntentCreationCallback = CompletableDeferred<ReadableMap>()
 
       return@CreateIntentCallback resultFromJavascript.getString("clientSecret")?.let {
         CreateIntentResult.Success(clientSecret = it)
@@ -181,22 +187,29 @@ class PaymentSheetFragment(
         billingDetailsBundle.getString("name"),
         billingDetailsBundle.getString("phone"))
     }
+    val configurationBuilder = PaymentSheet.Configuration.Builder(merchantDisplayName)
+      .allowsDelayedPaymentMethods(allowsDelayedPaymentMethods ?: false)
+      .defaultBillingDetails(defaultBillingDetails)
+      .customer(
+        if (customerId.isNotEmpty() && customerEphemeralKeySecret.isNotEmpty()) PaymentSheet.CustomerConfiguration(
+          id = customerId,
+          ephemeralKeySecret = customerEphemeralKeySecret
+        ) else null
+      )
+      .googlePay(googlePayConfig)
+      .appearance(appearance)
+      .shippingDetails(shippingDetails)
+      .billingDetailsCollectionConfiguration(billingDetailsConfig)
+      .preferredNetworks(mapToPreferredNetworks(arguments?.getIntegerArrayList("preferredNetworks")))
+      .allowsRemovalOfLastSavedPaymentMethod(allowsRemovalOfLastSavedPaymentMethod)
+    primaryButtonLabel?.let {
+      configurationBuilder.primaryButtonLabel(it)
+    }
+    paymentMethodOrder?.let {
+      configurationBuilder.paymentMethodOrder(it)
+    }
 
-    paymentSheetConfiguration = PaymentSheet.Configuration(
-      merchantDisplayName = merchantDisplayName,
-      allowsDelayedPaymentMethods = allowsDelayedPaymentMethods ?: false,
-      defaultBillingDetails=defaultBillingDetails,
-      customer = if (customerId.isNotEmpty() && customerEphemeralKeySecret.isNotEmpty()) PaymentSheet.CustomerConfiguration(
-        id = customerId,
-        ephemeralKeySecret = customerEphemeralKeySecret
-      ) else null,
-      googlePay = googlePayConfig,
-      appearance = appearance,
-      shippingDetails = shippingDetails,
-      primaryButtonLabel = primaryButtonLabel,
-      billingDetailsCollectionConfiguration = billingDetailsConfig,
-      preferredNetworks = mapToPreferredNetworks(arguments?.getIntegerArrayList("preferredNetworks"))
-    )
+    paymentSheetConfiguration = configurationBuilder.build()
 
     if (arguments?.getBoolean("customFlow") == true) {
       flowController = if (intentConfiguration != null) {

@@ -1,132 +1,101 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { auth } from "../config/firebaseConfig";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useState, useContext } from "react";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
+import { AuthContext } from "../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
+import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { login, register } from "../api";
 
-const CustomerLoginScreen = ({ navigation, route }) => {
+const CustomerLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isSignup, setIsSignup] = useState(route.params?.isSignup || false);
-  const { login } = useAuth();
+  const [isSignup, setIsSignup] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const { setUser } = useContext(AuthContext);
 
   const handleAuth = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      setError("Please fill in all fields");
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      let userCredential;
+      let response;
       if (isSignup) {
         if (!name) {
-          Alert.alert("Error", "Please enter your name");
+          setError("Please enter your name");
+          setLoading(false);
           return;
         }
-        userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        // Here you would typically save additional user info to your database
+        response = await register(name, email, password, "customer");
       } else {
-        userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        response = await login(email, password);
       }
 
-      const userData = {
-        id: userCredential.user.uid,
-        email: userCredential.user.email,
-        name: name || userCredential.user.displayName,
-        role: "customer",
-      };
-
-      await login(userData);
-      navigation.navigate("Home", { userType: "customer" });
-    } catch (error) {
-      Alert.alert("Error", error.message);
+      await AsyncStorage.setItem("token", response.data.token);
+      setUser({ type: "customer", ...response.data.user });
+      navigation.navigate("Home");
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) return <LoadingDisplayComponent message="Processing..." />;
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={globalStyles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={[globalStyles.title, styles.centerText]}>
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>{isSignup ? "Sign Up" : "Login"}</Text>
+      {error && <ErrorDisplayComponent message={error} />}
+      {isSignup && (
+        <TextInput
+          style={globalStyles.input}
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
+        />
+      )}
+      <TextInput
+        style={globalStyles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
+      <TextInput
+        style={globalStyles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <TouchableOpacity style={globalStyles.button} onPress={handleAuth}>
+        <Text style={globalStyles.buttonText}>
           {isSignup ? "Sign Up" : "Login"}
         </Text>
-        {isSignup && (
-          <TextInput
-            style={globalStyles.input}
-            placeholder="Name"
-            placeholderTextColor={colors.border}
-            value={name}
-            onChangeText={setName}
-          />
-        )}
-        <TextInput
-          style={globalStyles.input}
-          placeholder="Email"
-          placeholderTextColor={colors.border}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={globalStyles.input}
-          placeholder="Password"
-          placeholderTextColor={colors.border}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        <TouchableOpacity style={globalStyles.button} onPress={handleAuth}>
-          <Text style={globalStyles.buttonText}>
-            {isSignup ? "Sign Up" : "Login"}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
-          <Text style={[globalStyles.linkText, styles.centerText]}>
-            {isSignup
-              ? "Already have an account? Login"
-              : "Don't have an account? Sign Up"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+        <Text
+          style={[
+            globalStyles.buttonText,
+            { color: colors.primary, marginTop: 20 },
+          ]}
+        >
+          {isSignup
+            ? "Already have an account? Login"
+            : "Don't have an account? Sign Up"}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-  },
-  centerText: {
-    textAlign: "center",
-  },
-});
 
 export default CustomerLoginScreen;

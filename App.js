@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
-import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "./src/contexts/AuthContext";
 
+//Screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -28,7 +30,7 @@ import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
 const Stack = createStackNavigator();
 
-// Notifs
+// Notifications
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -37,97 +39,25 @@ Notifications.setNotificationHandler({
   }),
 });
 
-function ProtectedNavigator() {
-  const { user } = useAuth();
-
-  return (
-    <Stack.Navigator initialRouteName={user ? "Home" : "LogoAnimation"}>
-      {user ? (
-        <>
-          <Stack.Screen name="Home" component={HomeScreen} />
-          {user.role === "customer" ? (
-            <>
-              <Stack.Screen
-                name="SetDropOffLocation"
-                component={SetDropOffLocation}
-              />
-              <Stack.Screen
-                name="SelectItemType"
-                component={SelectItemTypeScreen}
-              />
-              <Stack.Screen name="SelectItem" component={SelectItemScreen} />
-              <Stack.Screen
-                name="PickupLocation"
-                component={PickupLocationScreen}
-              />
-              <Stack.Screen
-                name="OrderSummary"
-                component={OrderSummaryScreen}
-              />
-              <Stack.Screen name="LinkCard" component={LinkCardScreen} />
-              <Stack.Screen
-                name="OrderConfirmation"
-                component={OrderConfirmationScreen}
-              />
-              <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
-            </>
-          ) : (
-            <>
-              <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
-              <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
-              <Stack.Screen name="Directions" component={DirectionsScreen} />
-              <Stack.Screen
-                name="ConfirmDropOff"
-                component={ConfirmDropOffScreen}
-              />
-            </>
-          )}
-          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-          <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
-        </>
-      ) : (
-        <>
-          <Stack.Screen
-            name="LogoAnimation"
-            component={LogoAnimationScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="MainSelection"
-            component={MainSelectionScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="LoginChoice"
-            component={LoginChoiceScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="CustomerLogin" component={CustomerLoginScreen} />
-          <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
-        </>
-      )}
-    </Stack.Navigator>
-  );
-}
-
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const notificationListener = useRef();
   const responseListener = useRef();
 
   useEffect(() => {
+    checkUserSession();
     registerForPushNotificationsAsync().then((token) => console.log(token));
     scheduleWeeklyReminder();
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received:", notification);
-        // Handle the received notification
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received:", response);
-        // Handle the notification response
       });
 
     return () => {
@@ -138,17 +68,98 @@ export default function App() {
     };
   }, []);
 
+  const checkUserSession = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    } catch (error) {
+      console.error("Error retrieving user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const authContext = {
+    user,
+    setUser: async (userData) => {
+      setUser(userData);
+      if (userData) {
+        await AsyncStorage.setItem("userData", JSON.stringify(userData));
+      } else {
+        await AsyncStorage.removeItem("userData");
+      }
+    },
+    logout: async () => {
+      setUser(null);
+      await AsyncStorage.removeItem("userData");
+    },
+  };
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
-    <AuthProvider>
-      <StripeProvider
-        publishableKey="pk_test_51PqdcXHFArldXYxVOw3jqGz32uE9jftmBSRmejLuBxC357wLEBDRFs3aukJipDLl9EGUCNPIJLxlXHshHLRQ4DEu002UajBIn0"
-        merchantIdentifier="your_merchant_identifier" // Required for Apple Pay
-      >
+    <AuthContext.Provider value={authContext}>
+      <StripeProvider publishableKey="pk_test_51PqdcXHFArldXYxVOw3jqGz32uE9jftmBSRmejLuBxC357wLEBDRFs3aukJipDLl9EGUCNPIJLxlXHshHLRQ4DEu002UajBIn0">
         <NavigationContainer>
-          <ProtectedNavigator />
+          <Stack.Navigator initialRouteName="LogoAnimation">
+            <Stack.Screen
+              name="LogoAnimation"
+              component={LogoAnimationScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MainSelection"
+              component={MainSelectionScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="LoginChoice"
+              component={LoginChoiceScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="CustomerLogin"
+              component={CustomerLoginScreen}
+            />
+            <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen
+              name="SetDropOffLocation"
+              component={SetDropOffLocation}
+            />
+            <Stack.Screen
+              name="SelectItemType"
+              component={SelectItemTypeScreen}
+            />
+            <Stack.Screen name="SelectItem" component={SelectItemScreen} />
+            <Stack.Screen
+              name="PickupLocation"
+              component={PickupLocationScreen}
+            />
+            <Stack.Screen name="OrderSummary" component={OrderSummaryScreen} />
+            <Stack.Screen name="LinkCard" component={LinkCardScreen} />
+            <Stack.Screen
+              name="OrderConfirmation"
+              component={OrderConfirmationScreen}
+            />
+            <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
+            <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
+            <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
+            <Stack.Screen name="Directions" component={DirectionsScreen} />
+            <Stack.Screen
+              name="ConfirmDropOff"
+              component={ConfirmDropOffScreen}
+            />
+            <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+            <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
+          </Stack.Navigator>
         </NavigationContainer>
       </StripeProvider>
-    </AuthProvider>
+    </AuthContext.Provider>
   );
 }
 
@@ -173,7 +184,7 @@ function scheduleWeeklyReminder() {
   Notifications.scheduleNotificationAsync({
     content: {
       title: "Forgot Lunch in the Fridge Again?",
-      body: "Get it Zoorted for less than a Sausage Roll :woozy_face:!",
+      body: "Get it Zoorted for less than a Sausage Roll 🥴!",
     },
     trigger: {
       weekday: 3, // Wednesday

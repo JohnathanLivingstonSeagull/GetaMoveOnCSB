@@ -1,99 +1,97 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useContext, useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { globalStyles, colors } from "../styles/globalStyles";
+import { AuthContext } from "../contexts/AuthContext";
+import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
+import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { getCustomerOrders, getAvailableOrders } from "../api";
 
 const HomeScreen = ({ navigation }) => {
-  const { user, logout } = useAuth();
+  const { user } = useContext(AuthContext);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (user.type === 'customer') {
+        const response = await getCustomerOrders();
+        setOrders(response.data);
+      } else if (user.type === 'driver') {
+        const response = await getAvailableOrders();
+        setOrders(response.data);
+      }
+    } catch (err) {
+      setError("Failed to fetch orders. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const CustomerView = () => (
-    <View>
-      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
+    <ScrollView>
+      <Text style={globalStyles.title}>Welcome, {user.name}!</Text>
       <TouchableOpacity
-        style={styles.button}
+        style={globalStyles.button}
         onPress={() => navigation.navigate("SetDropOffLocation")}
       >
-        <Text style={styles.buttonText}>Request Delivery</Text>
+        <Text style={globalStyles.buttonText}>Request Delivery</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("TrackDriver")}
-      >
-        <Text style={styles.buttonText}>Track Current Delivery</Text>
-      </TouchableOpacity>
-    </View>
+      {orders.length > 0 ? (
+        <View>
+          <Text style={[globalStyles.title, { fontSize: 20, marginTop: 20 }]}>Your Orders:</Text>
+          {orders.map((order, index) => (
+            <TouchableOpacity 
+              key={index}
+              style={[globalStyles.button, { marginTop: 10, backgroundColor: colors.secondary }]}
+              onPress={() => navigation.navigate("TrackDriver", { orderId: order.id })}
+            >
+              <Text style={globalStyles.buttonText}>Order #{order.id}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ marginTop: 20 }}>You have no active orders.</Text>
+      )}
+    </ScrollView>
   );
 
   const DriverView = () => (
-    <View>
-      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("ViewRequests")}
-      >
-        <Text style={styles.buttonText}>View Delivery Requests</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("Directions")}
-      >
-        <Text style={styles.buttonText}>Current Delivery</Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView>
+      <Text style={globalStyles.title}>Welcome, {user.name}!</Text>
+      {orders.length > 0 ? (
+        <View>
+          <Text style={[globalStyles.title, { fontSize: 20, marginTop: 20 }]}>Available Orders:</Text>
+          {orders.map((order, index) => (
+            <TouchableOpacity 
+              key={index}
+              style={[globalStyles.button, { marginTop: 10, backgroundColor: colors.secondary }]}
+              onPress={() => navigation.navigate("ViewRequests", { orderId: order.id })}
+            >
+              <Text style={globalStyles.buttonText}>Order #{order.id}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ marginTop: 20 }}>There are no available orders at the moment.</Text>
+      )}
+    </ScrollView>
   );
 
-  const handleLogout = async () => {
-    await logout();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "LoginChoice" }],
-    });
-  };
+  if (loading) return <LoadingDisplayComponent message="Loading..." />;
+  if (error) return <ErrorDisplayComponent message={error} onRetry={fetchOrders} />;
 
   return (
-    <View style={styles.container}>
-      {user.role === "customer" ? <CustomerView /> : <DriverView />}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
+    <View style={globalStyles.container}>
+      {user.type === "customer" ? <CustomerView /> : <DriverView />}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  button: {
-    width: 358,
-    height: 48,
-    backgroundColor: "#4A90E2",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  logoutButton: {
-    width: 358,
-    height: 48,
-    backgroundColor: "#FA7454",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
 
 export default HomeScreen;

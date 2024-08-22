@@ -1,102 +1,95 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import * as Location from "expo-location";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { globalStyles, colors } from "../styles/globalStyles";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { getOrderDetails } from "../api";
+
+const { width, height } = Dimensions.get("window");
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyBd0sVEWWWTyztYX30VYtToIglg_g4LP4U";
 
 const TrackDriverScreen = ({ route }) => {
-  const { deliveryId } = route.params;
+  const { orderId } = route.params;
+  const [orderDetails, setOrderDetails] = useState(null);
   const [driverLocation, setDriverLocation] = useState(null);
-  const [destinationLocation, setDestinationLocation] = useState(null);
-  const [estimatedArrival, setEstimatedArrival] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchDeliveryDetails();
+    fetchOrderDetails();
+    const intervalId = setInterval(simulateDriverMovement, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
-  const fetchDeliveryDetails = async () => {
+  const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      setError(null);
-      // In a real app, you would fetch this data from your backend
-      // For now, we'll use mock data and simulate an API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-      setDestinationLocation({
-        latitude: 37.78825,
-        longitude: -122.4324,
-      });
-      setEstimatedArrival("15 minutes");
-      setDriverLocation({
-        latitude: 37.78825,
-        longitude: -122.4324,
-      });
+      const response = await getOrderDetails(orderId);
+      setOrderDetails(response.data);
+      // Initialize driver location as pickup location for this example
+      setDriverLocation(response.data.pickupLocation);
     } catch (err) {
-      setError("Failed to fetch delivery details. Please try again.");
+      setError("Failed to fetch order details. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const simulateDriverMovement = () => {
-    setDriverLocation((currentLocation) => {
-      if (!currentLocation) return currentLocation;
-      return {
-        latitude: currentLocation.latitude + (Math.random() - 0.5) * 0.01,
-        longitude: currentLocation.longitude + (Math.random() - 0.5) * 0.01,
-      };
-    });
+    if (driverLocation) {
+      setDriverLocation((prevLocation) => ({
+        latitude: prevLocation.latitude + (Math.random() - 0.5) * 0.001,
+        longitude: prevLocation.longitude + (Math.random() - 0.5) * 0.001,
+      }));
+    }
   };
 
-  useEffect(() => {
-    if (driverLocation) {
-      const interval = setInterval(simulateDriverMovement, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [driverLocation]);
-
   if (loading)
-    return <LoadingDisplayComponent message="Loading delivery details..." />;
+    return <LoadingDisplayComponent message="Loading order details..." />;
   if (error)
     return (
-      <ErrorDisplayComponent message={error} onRetry={fetchDeliveryDetails} />
+      <ErrorDisplayComponent message={error} onRetry={fetchOrderDetails} />
     );
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>Track Your Order</Text>
       {driverLocation && (
         <MapView
+          provider={PROVIDER_GOOGLE}
           style={styles.map}
-          region={{
+          initialRegion={{
             ...driverLocation,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-          provider="google"
+          customMapStyle={[]} // You can add custom map styles here
         >
           <Marker
             coordinate={driverLocation}
             title="Driver"
             description="Current driver location"
           />
-          {destinationLocation && (
+          {orderDetails && (
             <Marker
-              coordinate={destinationLocation}
+              coordinate={orderDetails.dropOffLocation}
               title="Destination"
-              description="Delivery destination"
-              pinColor="blue"
+              description="Drop-off location"
+              pinColor={colors.secondary}
             />
           )}
         </MapView>
       )}
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>
-          Estimated Arrival: {estimatedArrival}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.detailText}>Order ID: {orderId}</Text>
+        <Text style={styles.detailText}>
+          Status: {orderDetails?.status || "N/A"}
+        </Text>
+        <Text style={styles.detailText}>
+          Estimated Arrival:{" "}
+          {orderDetails?.estimatedArrival || "Calculating..."}
         </Text>
       </View>
     </View>
@@ -104,27 +97,19 @@ const TrackDriverScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
   map: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height - 100,
+    width: width,
+    height: height * 0.6,
   },
-  infoContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    elevation: 5,
+  detailsContainer: {
+    backgroundColor: colors.white,
+    padding: 20,
+    borderRadius: 8,
+    marginTop: 20,
   },
-  infoText: {
+  detailText: {
     fontSize: 16,
-    textAlign: "center",
+    marginBottom: 10,
   },
 });
 
