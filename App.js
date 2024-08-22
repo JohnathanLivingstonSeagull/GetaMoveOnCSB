@@ -4,9 +4,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth } from "./src/config/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import { AuthContext } from "./src/contexts/AuthContext";
 
-//Screens
+// Screen
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -30,7 +32,7 @@ import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
 const Stack = createStackNavigator();
 
-// Notifications
+// Configure notifications
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -46,40 +48,44 @@ export default function App() {
   const responseListener = useRef();
 
   useEffect(() => {
-    checkUserSession();
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userData = await AsyncStorage.getItem("userData");
+        setUser(
+          userData
+            ? JSON.parse(userData)
+            : { uid: firebaseUser.uid, email: firebaseUser.email }
+        );
+      } else {
+        setUser(null);
+        await AsyncStorage.removeItem("userData");
+      }
+      setIsLoading(false);
+    });
+
     registerForPushNotificationsAsync().then((token) => console.log(token));
     scheduleWeeklyReminder();
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received:", notification);
+        // Handle the received notification
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received:", response);
+        // Handle the notification response
       });
 
     return () => {
+      unsubscribe();
       Notifications.removeNotificationSubscription(
         notificationListener.current
       );
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
-
-  const checkUserSession = async () => {
-    try {
-      const userData = await AsyncStorage.getItem("userData");
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    } catch (error) {
-      console.error("Error retrieving user data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const authContext = {
     user,
@@ -98,6 +104,7 @@ export default function App() {
   };
 
   if (isLoading) {
+    // You can show a loading screen here if needed
     return null;
   }
 
