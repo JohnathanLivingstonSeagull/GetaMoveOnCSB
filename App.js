@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "./src/config/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
-import { AuthContext } from "./src/contexts/AuthContext";
+import { AuthProvider } from "./src/contexts/AuthContext";
 
-// Screen importing
+// Import your screens here
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -32,7 +29,6 @@ import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
 const Stack = createStackNavigator();
 
-// Notification config
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -42,44 +38,24 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const notificationListener = useRef();
   const responseListener = useRef();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const userData = await AsyncStorage.getItem("userData");
-        setUser(
-          userData
-            ? JSON.parse(userData)
-            : { uid: firebaseUser.uid, email: firebaseUser.email }
-        );
-      } else {
-        setUser(null);
-        await AsyncStorage.removeItem("userData");
-      }
-      setIsLoading(false);
-    });
-
     registerForPushNotificationsAsync().then((token) => console.log(token));
     scheduleWeeklyReminder();
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received:", notification);
-        // Handle the received notification
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received:", response);
-        // Handle the notification response
       });
 
     return () => {
-      unsubscribe();
       Notifications.removeNotificationSubscription(
         notificationListener.current
       );
@@ -87,29 +63,8 @@ export default function App() {
     };
   }, []);
 
-  const authContext = {
-    user,
-    setUser: async (userData) => {
-      setUser(userData);
-      if (userData) {
-        await AsyncStorage.setItem("userData", JSON.stringify(userData));
-      } else {
-        await AsyncStorage.removeItem("userData");
-      }
-    },
-    logout: async () => {
-      setUser(null);
-      await AsyncStorage.removeItem("userData");
-    },
-  };
-
-  if (isLoading) {
-    // Add loading screen if you have time!
-    return null;
-  }
-
   return (
-    <AuthContext.Provider value={authContext}>
+    <AuthProvider>
       <StripeProvider publishableKey="pk_test_51PqdcXHFArldXYxVOw3jqGz32uE9jftmBSRmejLuBxC357wLEBDRFs3aukJipDLl9EGUCNPIJLxlXHshHLRQ4DEu002UajBIn0">
         <NavigationContainer>
           <Stack.Navigator initialRouteName="LogoAnimation">
@@ -166,7 +121,7 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
       </StripeProvider>
-    </AuthContext.Provider>
+    </AuthProvider>
   );
 }
 
