@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
+import { View, Text } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 // import { StripeProvider } from "@stripe/stripe-react-native"; // Commented out Stripe import
 import * as Notifications from "expo-notifications";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { auth } from "./src/config/firebaseConfig";
-
 // Import all screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
@@ -28,8 +28,25 @@ import ConfirmDropOffScreen from "./src/screens/ConfirmDropOffScreen";
 import UserProfileScreen from "./src/screens/UserProfileScreen";
 import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.log('Error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>Something went wrong.</Text></View>;
+    }
+    return this.props.children;
+  }
+}
 const Stack = createStackNavigator();
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -37,25 +54,20 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-
 export default function App() {
   const notificationListener = useRef();
   const responseListener = useRef();
-
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) => console.log(token));
     scheduleWeeklyReminder();
-
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received:", notification);
       });
-
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response received:", response);
       });
-
     return () => {
       Notifications.removeNotificationSubscription(
         notificationListener.current
@@ -63,18 +75,17 @@ export default function App() {
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
-
   return (
-    <AuthProvider>
-      {/* Removed StripeProvider */}
-      <NavigationContainer>
+    <ErrorBoundary>
+      <AuthProvider>
+        <NavigationContainer>
         <Stack.Navigator initialRouteName="LogoAnimation">
           <Stack.Screen
             name="LogoAnimation"
             component={LogoAnimationScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
+           <Stack.Screen
             name="MainSelection"
             component={MainSelectionScreen}
             options={{ headerShown: false }}
@@ -120,12 +131,11 @@ export default function App() {
           <Stack.Screen name="UserProfile" component={UserProfileScreen} />
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
         </Stack.Navigator>
-      </NavigationContainer>
-    </AuthProvider>
+        </NavigationContainer>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
-
-
 async function registerForPushNotificationsAsync() {
   let token;
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -142,12 +152,11 @@ async function registerForPushNotificationsAsync() {
   console.log(token);
   return token;
 }
-
 function scheduleWeeklyReminder() {
   Notifications.scheduleNotificationAsync({
     content: {
       title: "Forgot Lunch in the Fridge Again?",
-      body: "Get it Zoorted for less than a Sausage Roll 🥴!",
+      body: "Get it Zoorted for less than a Sausage Roll :woozy_face:!",
     },
     trigger: {
       weekday: 5, // FRIDAY

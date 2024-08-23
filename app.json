@@ -1,32 +1,32 @@
 {
-    "expo": {
-      "name": "Zoorted",
-      "slug": "zoorted",
-      "version": "1.0.0",
-      "orientation": "portrait",
-      "icon": "/workspaces/GetaMoveOnCSB/src/assets/roughlogo.jpg",
-      "splash": {
-        "image": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png", 
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      },
-      "updates": {
-        "fallbackToCacheTimeout": 0
-      },
-      "assetBundlePatterns": [
-        "**/*"
-      ],
-      "ios": {
-        "supportsTablet": true
-      },
-      "android": {
-        "adaptiveIcon": {
-          "foregroundImage": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png", 
-          "backgroundColor": "#FFFFFF"
-        }
-      },
-      "web": {
-        "favicon": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png" 
+  "expo": {
+    "name": "Zoorted",
+    "slug": "zoorted",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "/workspaces/GetaMoveOnCSB/src/assets/roughlogo.jpg",
+    "splash": {
+      "image": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png",
+        "backgroundColor": "#FFFFFF"
       }
+    },
+    "web": {
+      "favicon": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png"
     }
   }
+}

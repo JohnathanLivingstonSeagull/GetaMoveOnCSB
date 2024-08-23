@@ -7,7 +7,6 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
@@ -23,21 +22,17 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     });
-
     return unsubscribe;
   }, []);
-
   const login = async (userData) => {
     setUser(userData);
     await AsyncStorage.setItem("userData", JSON.stringify(userData));
   };
-
   const logout = async () => {
     await auth.signOut();
     setUser(null);
     await AsyncStorage.removeItem("userData");
   };
-
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
