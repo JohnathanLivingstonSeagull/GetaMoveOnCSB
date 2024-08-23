@@ -4,9 +4,9 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { globalStyles, colors } from "../styles/globalStyles";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { db } from "../firebaseConfig";
 import { doc, onSnapshot } from "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
+import { db } from '../config/firebaseConfig';
+
 
 const { width, height } = Dimensions.get("window");
 

@@ -2,21 +2,21 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../contexts/AuthContext";
 
-import LoginChoiceScreen from "./LoginChoiceScreen";
-import CustomerLoginScreen from "./CustomerLoginScreen";
-import DriverLoginScreen from "./DriverLoginScreen";
-import HomeScreen from "./HomeScreen";
-import SetDropOffLocation from "./SetDropOffLocation";
-import SelectItemTypeScreen from "./SelectItemTypeScreen";
-import SelectItemScreen from "./SelectItemScreen";
-import PickupLocationScreen from "./PickupLocationScreen";
-import OrderSummaryScreen from "./OrderSummaryScreen";
-import LinkCardScreen from "./LinkCardScreen";
-import OrderConfirmationScreen from "./OrderConfirmationScreen";
-import TrackDriverScreen from "./TrackDriverScreen";
-import ViewRequestScreen from "./ViewRequestScreen";
-import DirectionsScreen from "./DirectionsScreen";
-import ConfirmDropOffScreen from "./ConfirmDropOffScreen";
+import LoginChoiceScreen from '../screens/LoginChoiceScreen';
+import CustomerLoginScreen from '../screens/CustomerLoginScreen';
+import DriverLoginScreen from '../screens/DriverLoginScreen';
+import HomeScreen from '../screens/HomeScreen';
+import SetDropOffLocation from '../screens/SetDropOffLocation';
+import SelectItemTypeScreen from '../screens/SelectItemTypeScreen';
+import SelectItemScreen from '../screens/SelectItemScreen';
+import PickupLocationScreen from '../screens/PickupLocationScreen';
+import OrderSummaryScreen from '../screens/OrderSummaryScreen';
+import LinkCardScreen from '../screens/LinkCardScreen';
+import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
+import TrackDriverScreen from '../screens/TrackDriverScreen';
+import ViewRequestScreen from '../screens/ViewRequestScreen';
+import DirectionsScreen from '../screens/DirectionsScreen';
+import ConfirmDropOffScreen from '../screens/ConfirmDropOffScreen';
 
 const Stack = createStackNavigator();
 

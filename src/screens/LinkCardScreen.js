@@ -21,16 +21,13 @@ const LinkCardScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       setError(null);
-
-      // In a real app, you would make an API call to your backend to create a PaymentIntent
-      // Your backend would then return a client secret
-      // For this example, we'll use a dummy client secret
+//placeholder
       const clientSecret = "dummy_client_secret";
 
       const { paymentIntent, error } = await confirmPayment(clientSecret, {
         type: "Card",
         billingDetails: {
-          // You can add billing details here if needed
+          // Billing detail
         },
       });
 

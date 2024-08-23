@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -18,11 +18,7 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -38,7 +34,11 @@ const HomeScreen = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.type]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const CustomerView = () => (
     <ScrollView style={styles.scrollView}>

@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
+import { db } from '../config/firebaseConfig';
+
 
 const OrderConfirmationScreen = ({ navigation, route }) => {
   const { orderId } = route.params;

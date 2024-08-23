@@ -1,9 +1,9 @@
 import React, { useEffect, useContext } from "react";
 import * as Location from "expo-location";
 import { AuthContext } from "../contexts/AuthContext";
-import { db } from "../firebaseConfig";
-import { doc, updateDoc } from "firebase/firestore";
 import { globalStyles, colors } from "../styles/globalStyles";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from '../config/firebaseConfig';
 
 const DriverLocationUpdater = ({ orderId }) => {
   const { user } = useContext(AuthContext);
@@ -53,7 +53,7 @@ const DriverLocationUpdater = ({ orderId }) => {
     };
   }, [orderId, user]);
 
-  return null; // This component doesn't render anything
+  return null; 
 };
 
 export default DriverLocationUpdater;

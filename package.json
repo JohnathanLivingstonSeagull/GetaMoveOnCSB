@@ -18,12 +18,10 @@
     "expo": "^51.0.30",
     "expo-av": "14.0.7",
     "expo-constants": "~16.0.2",
-    "expo-firebase-core": "^3.1.0",
     "expo-image-picker": "^15.0.7",
     "expo-location": "^17.0.1",
     "expo-notifications": "^0.28.16",
     "firebase": "9.6.11",
-    "license": "UNLICENSED",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
@@ -45,8 +43,9 @@
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/preset-react": "^7.24.7",
-    "eslint": "^9.9.0",
+    "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-native": "^4.1.0"
-  }
+  },
+  "license": "UNLICENSED"
 }

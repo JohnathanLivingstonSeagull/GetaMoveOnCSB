@@ -2,10 +2,9 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { AuthContext } from "../contexts/AuthContext";
-import { registerUser, loginUser } from "../firebaseServices";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { globalStyles, colors } from "../styles/globalStyles";
+import { auth, db } from '../config/firebaseConfig';
 
 const DriverLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -31,15 +30,16 @@ const DriverLoginScreen = ({ navigation }) => {
     try {
       let userCredential;
       if (isSignup) {
-        if (!name || !vehicleType || !licenseNumber) {
-          setError("Please fill in all fields");
-          setLoading(false);
-          return;
-        }
-        userCredential = await registerUser(email, password, name, "driver");
-        // You might want to store vehicleType and licenseNumber in Firestore here
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          name,
+          email,
+          type: "driver",
+          vehicleType,
+          licenseNumber
+        });
       } else {
-        userCredential = await loginUser(email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
 
       setUser({

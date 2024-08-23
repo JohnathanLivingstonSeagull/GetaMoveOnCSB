@@ -5,7 +5,9 @@ import { AuthContext } from "../contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { loginUser, registerUser } from "../firebaseServices"; // Updated import
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from '../config/firebaseConfig';
 
 const CustomerLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -27,20 +29,19 @@ const CustomerLoginScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      let response;
+      let userCredential;
       if (isSignup) {
-        if (!name) {
-          setError("Please enter your name");
-          setLoading(false);
-          return;
-        }
-        response = await registerUser(name, email, password, "customer");
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          name,
+          email,
+          type: "customer"
+        });
       } else {
-        response = await loginUser(email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
-
-      await AsyncStorage.setItem("token", response.user.uid);
-      setUser({ type: "customer", ...response.user });
+      await AsyncStorage.setItem("token", userCredential.user.uid);
+      setUser({ type: "customer", uid: userCredential.user.uid, email, name });
       navigation.navigate("Home");
     } catch (err) {
       setError(err.message || "An error occurred");

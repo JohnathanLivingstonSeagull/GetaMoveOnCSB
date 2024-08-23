@@ -4,6 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
 import { AuthProvider } from "./src/contexts/AuthContext";
+import { auth } from "./src/config/firebaseConfig";
 
 // Import all screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";

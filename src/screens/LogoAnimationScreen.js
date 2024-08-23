@@ -35,7 +35,7 @@ const LogoAnimationScreen = ({ navigation }) => {
     };
 
     animateLogo();
-  }, []);
+  }, [fadeAnim, logoPosition, navigation]);
 
   return (
     <View style={styles.container}>
@@ -49,8 +49,8 @@ const LogoAnimationScreen = ({ navigation }) => {
         ]}
       />
       <Animated.View style={{ opacity: fadeAnim }}>
-        <Text style={styles.appName}>App Name</Text>
-        <Text style={styles.subText}>Forgot it? We've got it sorted!</Text>
+        <Text style={styles.appName}>Zoorted</Text>
+        <Text style={styles.subText}>'Forgot it? We have got it sorted!'</Text>
       </Animated.View>
     </View>
   );
