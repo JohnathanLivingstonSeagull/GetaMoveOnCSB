@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { AuthContext } from "../contexts/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
 import { login, register } from "../api";
@@ -39,11 +38,10 @@ const CustomerLoginScreen = ({ navigation }) => {
         response = await login(email, password);
       }
 
-      await AsyncStorage.setItem("token", response.data.token);
-      setUser({ type: "customer", ...response.data.user });
+      setUser({ type: "customer", ...response.user });
       navigation.navigate("Home");
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
