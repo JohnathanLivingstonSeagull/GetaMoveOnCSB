@@ -9,8 +9,10 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyBd0sVEWWWTyztYX30VYtToIglg_g4LP4U";
+
 const SetDropOffLocation = ({ navigation }) => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -42,7 +44,7 @@ const SetDropOffLocation = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
       {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
       <GooglePlacesAutocomplete
         placeholder="Search for a location"
@@ -81,42 +83,23 @@ const SetDropOffLocation = ({ navigation }) => {
           />
         </MapView>
       )}
-      <TouchableOpacity style={styles.button} onPress={handleConfirm}>
-        <Text style={styles.buttonText}>Confirm Drop-off Location</Text>
+      <TouchableOpacity style={globalStyles.button} onPress={handleConfirm}>
+        <Text style={globalStyles.buttonText}>Confirm Drop-off Location</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-  },
   map: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height - 150,
-  },
-  button: {
-    position: "absolute",
-    bottom: 20,
-    width: 358,
-    height: 48,
-    backgroundColor: "#4A90E2",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    height: Dimensions.get("window").height - 200,
+    marginBottom: 20,
   },
   errorText: {
     color: "red",
     marginBottom: 10,
+    textAlign: "center",
   },
   autocompleteContainer: {
     position: "absolute",
@@ -127,6 +110,10 @@ const styles = StyleSheet.create({
   },
   autocompleteInput: {
     fontSize: 16,
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
   },
 });
 

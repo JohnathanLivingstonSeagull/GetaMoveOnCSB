@@ -5,7 +5,7 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import * as Notifications from "expo-notifications";
 import { AuthProvider } from "./src/contexts/AuthContext";
 
-// Import your screens here
+// Import all screens
 import LogoAnimationScreen from "./src/screens/LogoAnimationScreen";
 import MainSelectionScreen from "./src/screens/MainSelectionScreen";
 import LoginChoiceScreen from "./src/screens/LoginChoiceScreen";
@@ -149,7 +149,7 @@ function scheduleWeeklyReminder() {
       body: "Get it Zoorted for less than a Sausage Roll 🥴!",
     },
     trigger: {
-      weekday: 3, // Wednesday
+      weekday: 5, // FRIDAY
       hour: 12,
       minute: 0,
       repeats: true,

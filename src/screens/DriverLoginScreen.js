@@ -2,10 +2,10 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { AuthContext } from "../contexts/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerUser, loginUser } from "../firebaseServices";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { login, register } from "../api";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const DriverLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -29,26 +29,28 @@ const DriverLoginScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      let response;
+      let userCredential;
       if (isSignup) {
         if (!name || !vehicleType || !licenseNumber) {
           setError("Please fill in all fields");
           setLoading(false);
           return;
         }
-        response = await register(name, email, password, "driver", {
-          vehicleType,
-          licenseNumber,
-        });
+        userCredential = await registerUser(email, password, name, "driver");
+        // You might want to store vehicleType and licenseNumber in Firestore here
       } else {
-        response = await login(email, password);
+        userCredential = await loginUser(email, password);
       }
 
-      await AsyncStorage.setItem("token", response.data.token);
-      setUser({ type: "driver", ...response.data.user });
+      setUser({
+        type: "driver",
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        name,
+      });
       navigation.navigate("Home");
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.message);
     } finally {
       setLoading(false);
     }

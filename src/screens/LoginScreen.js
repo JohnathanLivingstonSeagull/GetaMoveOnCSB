@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");

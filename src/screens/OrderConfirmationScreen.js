@@ -1,56 +1,80 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { globalStyles, colors } from "../styles/globalStyles";
+import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
+import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const OrderConfirmationScreen = ({ navigation, route }) => {
-  const { price } = route.params;
+  const { orderId } = route.params;
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        const orderRef = doc(db, "orders", orderId);
+        const orderSnap = await getDoc(orderRef);
+
+        if (orderSnap.exists()) {
+          setOrderDetails(orderSnap.data());
+        } else {
+          setError("Order not found");
+        }
+      } catch (err) {
+        setError("Failed to fetch order details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [orderId]);
+
+  if (loading)
+    return <LoadingDisplayComponent message="Loading order details..." />;
+  if (error) return <ErrorDisplayComponent message={error} />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Order Confirmed!</Text>
-      <Text style={styles.message}>
-        Your payment of ${price} has been processed successfully.
-      </Text>
-      <Text style={styles.message}>
-        A driver will be assigned to your delivery shortly.
-      </Text>
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>Order Confirmed!</Text>
+      {orderDetails && (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailText}>Order ID: {orderId}</Text>
+          <Text style={styles.detailText}>Item: {orderDetails.itemName}</Text>
+          <Text style={styles.detailText}>Price: ${orderDetails.price}</Text>
+          <Text style={styles.detailText}>Status: {orderDetails.status}</Text>
+          <Text style={styles.detailText}>
+            Pickup: {orderDetails.pickupLocation.address}
+          </Text>
+          <Text style={styles.detailText}>
+            Drop-off: {orderDetails.dropOffLocation.address}
+          </Text>
+        </View>
+      )}
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("TrackDriver")}
+        style={globalStyles.button}
+        onPress={() => navigation.navigate("TrackDriver", { orderId })}
       >
-        <Text style={styles.buttonText}>Track Your Delivery</Text>
+        <Text style={globalStyles.buttonText}>Track Your Delivery</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  detailsContainer: {
+    backgroundColor: colors.white,
     padding: 20,
-    backgroundColor: "#F5F5F5",
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 8,
+    marginVertical: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  message: {
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: "#4A90E2",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 18,
+  detailText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 

@@ -4,7 +4,9 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { globalStyles, colors } from "../styles/globalStyles";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { getOrderDetails } from "../api";
+import { db } from "../firebaseConfig";
+import { doc, onSnapshot } from "firebase/firestore";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const { width, height } = Dimensions.get("window");
 
@@ -18,40 +20,39 @@ const TrackDriverScreen = ({ route }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchOrderDetails();
-    const intervalId = setInterval(simulateDriverMovement, 5000);
-    return () => clearInterval(intervalId);
-  }, []);
+    const orderRef = doc(db, "orders", orderId);
+    const unsubscribe = onSnapshot(
+      orderRef,
+      (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          setOrderDetails(data);
+          if (data.driverLocation) {
+            setDriverLocation({
+              latitude: data.driverLocation.latitude,
+              longitude: data.driverLocation.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            });
+          }
+          setLoading(false);
+        } else {
+          setError("Order not found");
+          setLoading(false);
+        }
+      },
+      (err) => {
+        setError("Failed to fetch order details");
+        setLoading(false);
+      }
+    );
 
-  const fetchOrderDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await getOrderDetails(orderId);
-      setOrderDetails(response.data);
-      // Initialize driver location as pickup location for this example
-      setDriverLocation(response.data.pickupLocation);
-    } catch (err) {
-      setError("Failed to fetch order details. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const simulateDriverMovement = () => {
-    if (driverLocation) {
-      setDriverLocation((prevLocation) => ({
-        latitude: prevLocation.latitude + (Math.random() - 0.5) * 0.001,
-        longitude: prevLocation.longitude + (Math.random() - 0.5) * 0.001,
-      }));
-    }
-  };
+    return () => unsubscribe();
+  }, [orderId]);
 
   if (loading)
     return <LoadingDisplayComponent message="Loading order details..." />;
-  if (error)
-    return (
-      <ErrorDisplayComponent message={error} onRetry={fetchOrderDetails} />
-    );
+  if (error) return <ErrorDisplayComponent message={error} />;
 
   return (
     <View style={globalStyles.container}>
@@ -60,21 +61,23 @@ const TrackDriverScreen = ({ route }) => {
         <MapView
           provider={PROVIDER_GOOGLE}
           style={styles.map}
-          initialRegion={{
-            ...driverLocation,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-          customMapStyle={[]} // You can add custom map styles here
+          region={driverLocation}
+          customMapStyle={[]} // Add custom map style if time allows
         >
           <Marker
-            coordinate={driverLocation}
+            coordinate={{
+              latitude: driverLocation.latitude,
+              longitude: driverLocation.longitude,
+            }}
             title="Driver"
             description="Current driver location"
           />
-          {orderDetails && (
+          {orderDetails && orderDetails.dropOffLocation && (
             <Marker
-              coordinate={orderDetails.dropOffLocation}
+              coordinate={{
+                latitude: orderDetails.dropOffLocation.latitude,
+                longitude: orderDetails.dropOffLocation.longitude,
+              }}
               title="Destination"
               description="Drop-off location"
               pinColor={colors.secondary}

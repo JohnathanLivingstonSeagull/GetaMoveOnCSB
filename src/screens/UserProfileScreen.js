@@ -10,6 +10,7 @@ import {
 import { ErrorDisplayComponent } from "../components/ErrorDisplayComponent";
 import { LoadingDisplayComponent } from "../components/LoadingDisplayComponent";
 
+
 const UserProfileScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,8 +26,7 @@ const UserProfileScreen = ({ navigation }) => {
     try {
       setLoading(true);
       setError(null);
-      // In a real app, you would fetch user data from your backend or local storage
-      // For now, we'll simulate an API call
+      // simulating API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setName("John Doe");
       setEmail("john.doe@example.com");
@@ -42,8 +42,7 @@ const UserProfileScreen = ({ navigation }) => {
     try {
       setLoading(true);
       setError(null);
-      // In a real app, you would send this data to your backend
-      // For now, we'll simulate an API call
+      // simulating api call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       Alert.alert("Success", "Profile updated successfully");
     } catch (err) {

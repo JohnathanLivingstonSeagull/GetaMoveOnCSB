@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 
+
 export default function SetSafeOptionScreen({ navigation, route }) {
   const [requiresSafe, setRequiresSafe] = useState(false);
   const [safeCode, setSafeCode] = useState("");

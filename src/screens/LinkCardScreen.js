@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
 import { LoadingDisplayComponent } from "../components/LoadingDisplayComponent";
 import { ErrorDisplayComponent } from "../components/ErrorDisplayComponent";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const LinkCardScreen = ({ navigation, route }) => {
   const [cardDetails, setCardDetails] = useState(null);
