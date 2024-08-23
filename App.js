@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { StripeProvider } from "@stripe/stripe-react-native";
+// import { StripeProvider } from "@stripe/stripe-react-native"; // Commented out Stripe import
 import * as Notifications from "expo-notifications";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { auth } from "./src/config/firebaseConfig";
@@ -66,65 +66,65 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <StripeProvider publishableKey="pk_test_51PqdcXHFArldXYxVOw3jqGz32uE9jftmBSRmejLuBxC357wLEBDRFs3aukJipDLl9EGUCNPIJLxlXHshHLRQ4DEu002UajBIn0">
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="LogoAnimation">
-            <Stack.Screen
-              name="LogoAnimation"
-              component={LogoAnimationScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="MainSelection"
-              component={MainSelectionScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="LoginChoice"
-              component={LoginChoiceScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="CustomerLogin"
-              component={CustomerLoginScreen}
-            />
-            <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen
-              name="SetDropOffLocation"
-              component={SetDropOffLocation}
-            />
-            <Stack.Screen
-              name="SelectItemType"
-              component={SelectItemTypeScreen}
-            />
-            <Stack.Screen name="SelectItem" component={SelectItemScreen} />
-            <Stack.Screen
-              name="PickupLocation"
-              component={PickupLocationScreen}
-            />
-            <Stack.Screen name="OrderSummary" component={OrderSummaryScreen} />
-            <Stack.Screen name="LinkCard" component={LinkCardScreen} />
-            <Stack.Screen
-              name="OrderConfirmation"
-              component={OrderConfirmationScreen}
-            />
-            <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
-            <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
-            <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
-            <Stack.Screen name="Directions" component={DirectionsScreen} />
-            <Stack.Screen
-              name="ConfirmDropOff"
-              component={ConfirmDropOffScreen}
-            />
-            <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-            <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </StripeProvider>
+      {/* Removed StripeProvider */}
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="LogoAnimation">
+          <Stack.Screen
+            name="LogoAnimation"
+            component={LogoAnimationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="MainSelection"
+            component={MainSelectionScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="LoginChoice"
+            component={LoginChoiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CustomerLogin"
+            component={CustomerLoginScreen}
+          />
+          <Stack.Screen name="DriverLogin" component={DriverLoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen
+            name="SetDropOffLocation"
+            component={SetDropOffLocation}
+          />
+          <Stack.Screen
+            name="SelectItemType"
+            component={SelectItemTypeScreen}
+          />
+          <Stack.Screen name="SelectItem" component={SelectItemScreen} />
+          <Stack.Screen
+            name="PickupLocation"
+            component={PickupLocationScreen}
+          />
+          <Stack.Screen name="OrderSummary" component={OrderSummaryScreen} />
+          <Stack.Screen name="LinkCard" component={LinkCardScreen} />
+          <Stack.Screen
+            name="OrderConfirmation"
+            component={OrderConfirmationScreen}
+          />
+          <Stack.Screen name="TrackDriver" component={TrackDriverScreen} />
+          <Stack.Screen name="ViewRequests" component={ViewRequestScreen} />
+          <Stack.Screen name="ItemDetails" component={ItemDetailsScreen} />
+          <Stack.Screen name="Directions" component={DirectionsScreen} />
+          <Stack.Screen
+            name="ConfirmDropOff"
+            component={ConfirmDropOffScreen}
+          />
+          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+          <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </AuthProvider>
   );
 }
+
 
 async function registerForPushNotificationsAsync() {
   let token;

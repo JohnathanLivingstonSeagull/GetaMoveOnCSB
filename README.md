@@ -17,7 +17,7 @@ Zoorted is a mobile application that connects customers who need items delivered
 - Expo
 - Firebase (Authentication and Realtime Database)
 - Google Maps API
-- Stripe (for payments)
+- Stripe (for payments) - Added and removed due to Expo bug, workaround visible in code
 
 ## Getting Started
 
@@ -81,7 +81,7 @@ This project is not currently licensed
 
 - Thanks to [Expo](https://expo.dev/) for making React Native development easier
 - [Google Maps](https://developers.google.com/maps) for their excellent mapping services
-- [Stripe](https://stripe.com/) for secure payment processing
+- [Stripe](https://stripe.com/) for secure payment processing - Added and removed due to Expo bug, workaround visible in code
 
 ## Contact
 
