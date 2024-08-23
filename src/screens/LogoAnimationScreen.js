@@ -50,7 +50,7 @@ const LogoAnimationScreen = ({ navigation }) => {
       />
       <Animated.View style={{ opacity: fadeAnim }}>
         <Text style={styles.appName}>Zoorted</Text>
-        <Text style={styles.subText}>'Forgot it? We have got it sorted!'</Text>
+        <Text style={styles.subText}>Forgot it? We have got it sorted!</Text>
       </Animated.View>
     </View>
   );

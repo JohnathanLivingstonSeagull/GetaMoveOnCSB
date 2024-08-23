@@ -12,20 +12,24 @@ const DriverLocationUpdater = ({ orderId }) => {
     let locationSubscription;
 
     const startLocationUpdates = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.error("Permission to access location was denied");
-        return;
-      }
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.error("Permission to access location was denied");
+          return;
+        }
 
-      locationSubscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 5000,
-          distanceInterval: 10,
-        },
-        (location) => updateDriverLocation(location)
-      );
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 10,
+          },
+          (location) => updateDriverLocation(location)
+        );
+      } catch (error) {
+        console.error("Error starting location updates:", error);
+      }
     };
 
     const updateDriverLocation = async (location) => {
@@ -42,7 +46,7 @@ const DriverLocationUpdater = ({ orderId }) => {
       }
     };
 
-    if (user.type === "driver" && orderId) {
+    if (user?.type === "driver" && orderId) {
       startLocationUpdates();
     }
 
@@ -53,7 +57,7 @@ const DriverLocationUpdater = ({ orderId }) => {
     };
   }, [orderId, user]);
 
-  return null; 
+  return null;
 };
 
 export default DriverLocationUpdater;

@@ -9,7 +9,7 @@ const firebaseConfig = {
   storageBucket: "getamoveon-46c2c.appspot.com",
   messagingSenderId: "418214493360",
   appId: "1:418214493360:web:39f049e8ae7f29bfb00f75",
-  measurementId: "G-TZRF94DB8D",
+  measurementId: "G-TZRF94DB8D"
 };
 
 const app = initializeApp(firebaseConfig);

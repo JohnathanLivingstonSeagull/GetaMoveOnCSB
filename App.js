@@ -27,7 +27,6 @@ import DirectionsScreen from "./src/screens/DirectionsScreen";
 import ConfirmDropOffScreen from "./src/screens/ConfirmDropOffScreen";
 import UserProfileScreen from "./src/screens/UserProfileScreen";
 import OrderHistoryScreen from "./src/screens/OrderHistoryScreen";
-
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -137,32 +136,43 @@ export default function App() {
   );
 }
 async function registerForPushNotificationsAsync() {
-  let token;
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  try {
+    let token;
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      console.warn("Failed to get push token for push notification!");
+      return null;
+    }
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log("Push token:", token);
+    return token;
+  } catch (error) {
+    console.error("Error registering for push notifications:", error);
+    return null;
   }
-  if (finalStatus !== "granted") {
-    alert("Failed to get push token for push notification!");
-    return;
-  }
-  token = (await Notifications.getExpoPushTokenAsync()).data;
-  console.log(token);
-  return token;
 }
-function scheduleWeeklyReminder() {
-  Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Forgot Lunch in the Fridge Again?",
-      body: "Get it Zoorted for less than a Sausage Roll :woozy_face:!",
-    },
-    trigger: {
-      weekday: 5, // FRIDAY
-      hour: 12,
-      minute: 0,
-      repeats: true,
-    },
-  });
+
+async function scheduleWeeklyReminder() {
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Forgot Lunch in the Fridge Again?",
+        body: "Get it Zoorted for less than a Sausage Roll :woozy_face:!",
+      },
+      trigger: {
+        weekday: 5,
+        hour: 12,
+        minute: 0,
+        repeats: true,
+      },
+    });
+    console.log("Weekly reminder scheduled successfully");
+  } catch (error) {
+    console.error("Error scheduling weekly reminder:", error);
+  }
 }

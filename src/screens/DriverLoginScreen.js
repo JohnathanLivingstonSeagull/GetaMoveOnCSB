@@ -5,6 +5,8 @@ import { AuthContext } from "../contexts/AuthContext";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
 import { auth, db } from '../config/firebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
 
 const DriverLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
