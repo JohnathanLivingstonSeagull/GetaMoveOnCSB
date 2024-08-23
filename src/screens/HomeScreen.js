@@ -1,5 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { AuthContext } from "../contexts/AuthContext";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
@@ -20,10 +26,10 @@ const HomeScreen = ({ navigation }) => {
     setLoading(true);
     setError(null);
     try {
-      if (user.type === 'customer') {
+      if (user.type === "customer") {
         const response = await getCustomerOrders();
         setOrders(response.data);
-      } else if (user.type === 'driver') {
+      } else if (user.type === "driver") {
         const response = await getAvailableOrders();
         setOrders(response.data);
       }
@@ -35,8 +41,8 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const CustomerView = () => (
-    <ScrollView>
-      <Text style={globalStyles.title}>Welcome, {user.name}!</Text>
+    <ScrollView style={styles.scrollView}>
+      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
       <TouchableOpacity
         style={globalStyles.button}
         onPress={() => navigation.navigate("SetDropOffLocation")}
@@ -45,47 +51,54 @@ const HomeScreen = ({ navigation }) => {
       </TouchableOpacity>
       {orders.length > 0 ? (
         <View>
-          <Text style={[globalStyles.title, { fontSize: 20, marginTop: 20 }]}>Your Orders:</Text>
+          <Text style={styles.sectionTitle}>Your Orders:</Text>
           {orders.map((order, index) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={index}
-              style={[globalStyles.button, { marginTop: 10, backgroundColor: colors.secondary }]}
-              onPress={() => navigation.navigate("TrackDriver", { orderId: order.id })}
+              style={styles.orderButton}
+              onPress={() =>
+                navigation.navigate("TrackDriver", { orderId: order.id })
+              }
             >
               <Text style={globalStyles.buttonText}>Order #{order.id}</Text>
             </TouchableOpacity>
           ))}
         </View>
       ) : (
-        <Text style={{ marginTop: 20 }}>You have no active orders.</Text>
+        <Text style={styles.noOrdersText}>You have no active orders.</Text>
       )}
     </ScrollView>
   );
 
   const DriverView = () => (
-    <ScrollView>
-      <Text style={globalStyles.title}>Welcome, {user.name}!</Text>
+    <ScrollView style={styles.scrollView}>
+      <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
       {orders.length > 0 ? (
         <View>
-          <Text style={[globalStyles.title, { fontSize: 20, marginTop: 20 }]}>Available Orders:</Text>
+          <Text style={styles.sectionTitle}>Available Orders:</Text>
           {orders.map((order, index) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={index}
-              style={[globalStyles.button, { marginTop: 10, backgroundColor: colors.secondary }]}
-              onPress={() => navigation.navigate("ViewRequests", { orderId: order.id })}
+              style={styles.orderButton}
+              onPress={() =>
+                navigation.navigate("ViewRequests", { orderId: order.id })
+              }
             >
               <Text style={globalStyles.buttonText}>Order #{order.id}</Text>
             </TouchableOpacity>
           ))}
         </View>
       ) : (
-        <Text style={{ marginTop: 20 }}>There are no available orders at the moment.</Text>
+        <Text style={styles.noOrdersText}>
+          There are no available orders at the moment.
+        </Text>
       )}
     </ScrollView>
   );
 
   if (loading) return <LoadingDisplayComponent message="Loading..." />;
-  if (error) return <ErrorDisplayComponent message={error} onRetry={fetchOrders} />;
+  if (error)
+    return <ErrorDisplayComponent message={error} onRetry={fetchOrders} />;
 
   return (
     <View style={globalStyles.container}>
@@ -93,5 +106,33 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
+  welcomeText: {
+    ...globalStyles.title,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  orderButton: {
+    ...globalStyles.button,
+    marginTop: 10,
+    backgroundColor: colors.secondary,
+  },
+  noOrdersText: {
+    fontSize: 16,
+    color: colors.text,
+    marginTop: 20,
+    textAlign: "center",
+  },
+});
 
 export default HomeScreen;

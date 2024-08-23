@@ -1,156 +1,119 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import * as Location from "expo-location";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { globalStyles, colors } from "../styles/globalStyles";
+import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
+import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
+import { db } from "../firebaseConfig";
+import { doc, onSnapshot } from "firebase/firestore";
+import { globalStyles, colors } from "../styles/globalStyles";
 
-const ViewRequestScreen = ({ navigation }) => {
-  const [requests, setRequests] = useState([]);
+const { width, height } = Dimensions.get("window");
+
+const GOOGLE_MAPS_API_KEY = "AIzaSyBd0sVEWWWTyztYX30VYtToIglg_g4LP4U";
+
+const TrackDriverScreen = ({ route }) => {
+  const { orderId } = route.params;
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [driverLocation, setDriverLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchNearbyRequests();
-  }, []);
-
-  const fetchNearbyRequests = async () => {
-    try {
-      setLoading(true);
-      // Get current location
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setError("Permission to access location was denied");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-
-      // Fetch nearby requests from the backend, edit later
-      const response = await fetch(`YOUR_BACKEND_URL/api/nearby-requests`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch nearby requests");
-      }
-
-      const data = await response.json();
-      setRequests(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAcceptRequest = async (requestId) => {
-    try {
-      const response = await fetch(
-        `YOUR_BACKEND_URL/api/accept-request/${requestId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Add authentication header here
-          },
+    const orderRef = doc(db, "orders", orderId);
+    const unsubscribe = onSnapshot(
+      orderRef,
+      (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          setOrderDetails(data);
+          if (data.driverLocation) {
+            setDriverLocation({
+              latitude: data.driverLocation.latitude,
+              longitude: data.driverLocation.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            });
+          }
+          setLoading(false);
+        } else {
+          setError("Order not found");
+          setLoading(false);
         }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to accept request");
+      },
+      (err) => {
+        setError("Failed to fetch order details");
+        setLoading(false);
       }
-
-      const data = await response.json();
-      navigation.navigate("DirectionsScreen", { requestId: data.requestId });
-    } catch (err) {
-      Alert.alert("Error", err.message);
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading nearby requests...</Text>
-      </View>
     );
-  }
 
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text>Error: {error}</Text>
-        <TouchableOpacity style={styles.button} onPress={fetchNearbyRequests}>
-          <Text style={styles.buttonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+    return () => unsubscribe();
+  }, [orderId]);
+
+  if (loading)
+    return <LoadingDisplayComponent message="Loading order details..." />;
+  if (error) return <ErrorDisplayComponent message={error} />;
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={requests}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.requestItem}>
-            <Text>From: {item.pickupLocation}</Text>
-            <Text>To: {item.dropOffLocation}</Text>
-            <Text>Item: {item.itemName}</Text>
-            <Text>Price: ${item.price}</Text>
-            <TouchableOpacity
-              style={styles.acceptButton}
-              onPress={() => handleAcceptRequest(item.id)}
-            >
-              <Text style={styles.buttonText}>Accept</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>Track Your Order</Text>
+      {driverLocation && (
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          region={driverLocation}
+          customMapStyle={[]} // Add custom map style if time allows
+        >
+          <Marker
+            coordinate={{
+              latitude: driverLocation.latitude,
+              longitude: driverLocation.longitude,
+            }}
+            title="Driver"
+            description="Current driver location"
+          />
+          {orderDetails && orderDetails.dropOffLocation && (
+            <Marker
+              coordinate={{
+                latitude: orderDetails.dropOffLocation.latitude,
+                longitude: orderDetails.dropOffLocation.longitude,
+              }}
+              title="Destination"
+              description="Drop-off location"
+              pinColor={colors.secondary}
+            />
+          )}
+        </MapView>
+      )}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.detailText}>Order ID: {orderId}</Text>
+        <Text style={styles.detailText}>
+          Status: {orderDetails?.status || "N/A"}
+        </Text>
+        <Text style={styles.detailText}>
+          Estimated Arrival:{" "}
+          {orderDetails?.estimatedArrival || "Calculating..."}
+        </Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  map: {
+    width: width,
+    height: height * 0.6,
+  },
+  detailsContainer: {
+    backgroundColor: colors.white,
     padding: 20,
-    backgroundColor: "#F5F5F5",
-  },
-  requestItem: {
-    backgroundColor: "#FFFFFF",
-    padding: 15,
     borderRadius: 8,
-    marginBottom: 10,
-  },
-  acceptButton: {
-    backgroundColor: "#4A90E2",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  button: {
-    backgroundColor: "#4A90E2",
-    padding: 10,
-    borderRadius: 5,
     marginTop: 20,
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 
-export default ViewRequestScreen;
+export default TrackDriverScreen;

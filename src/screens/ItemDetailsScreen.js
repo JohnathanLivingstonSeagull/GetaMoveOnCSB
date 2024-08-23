@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 export default function ItemDetailsScreen({ navigation, route }) {
   const { request } = route.params;

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { ErrorDisplayComponent } from "../components/ErrorDisplayComponent";
 import { LoadingDisplayComponent } from "../components/LoadingDisplayComponent";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const OrderHistoryScreen = ({ navigation }) => {
   const [orders, setOrders] = useState([]);

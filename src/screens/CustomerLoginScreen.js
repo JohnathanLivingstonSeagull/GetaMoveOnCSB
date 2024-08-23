@@ -2,9 +2,10 @@ import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { AuthContext } from "../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import ErrorDisplayComponent from "../components/ErrorDisplayComponent";
 import LoadingDisplayComponent from "../components/LoadingDisplayComponent";
-import { login, register } from "../api";
+import { loginUser, registerUser } from "../firebaseServices"; // Updated import
 
 const CustomerLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -33,15 +34,16 @@ const CustomerLoginScreen = ({ navigation }) => {
           setLoading(false);
           return;
         }
-        response = await register(name, email, password, "customer");
+        response = await registerUser(name, email, password, "customer");
       } else {
-        response = await login(email, password);
+        response = await loginUser(email, password);
       }
 
+      await AsyncStorage.setItem("token", response.user.uid);
       setUser({ type: "customer", ...response.user });
       navigation.navigate("Home");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
     }

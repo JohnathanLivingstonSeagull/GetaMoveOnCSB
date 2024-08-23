@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
+
 const ConfirmDropOffScreen = ({ navigation, route }) => {
   const [image, setImage] = useState(null);
   const { deliveryId } = route.params;
@@ -33,10 +34,7 @@ const ConfirmDropOffScreen = ({ navigation, route }) => {
     }
 
     try {
-      // Here you would typically upload the image to your server
-      // and update the delivery status in your backend
-
-      // For now, we'll just simulate a successful API call
+      // simulating successful call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       Alert.alert("Success", "Delivery confirmed", [

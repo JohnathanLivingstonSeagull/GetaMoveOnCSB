@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const SelectItemTypeScreen = ({ navigation, route }) => {
   const [itemType, setItemType] = useState("");
@@ -15,8 +16,8 @@ const SelectItemTypeScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Select Item Type</Text>
+    <View style={globalStyles.container}>
+      <Text style={globalStyles.title}>Select Item Type</Text>
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={itemType}
@@ -30,49 +31,24 @@ const SelectItemTypeScreen = ({ navigation, route }) => {
           <Picker.Item label="Miscellaneous" value="miscellaneous" />
         </Picker>
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleContinue}>
-        <Text style={styles.buttonText}>Continue</Text>
+      <TouchableOpacity style={globalStyles.button} onPress={handleContinue}>
+        <Text style={globalStyles.buttonText}>Continue</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
   pickerContainer: {
-    width: 358,
-    borderColor: "#CCCCCC",
+    borderColor: colors.border,
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
+    backgroundColor: colors.white,
   },
   picker: {
-    width: 358,
-    height: 48,
-  },
-  button: {
-    width: 358,
-    height: 48,
-    backgroundColor: "#4A90E2",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    height: 50,
+    width: "100%",
   },
 });
 

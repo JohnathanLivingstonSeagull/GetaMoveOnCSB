@@ -58,10 +58,10 @@ export function scheduleWeeklyReminder() {
   Notifications.scheduleNotificationAsync({
     content: {
       title: "Forgot Lunch in the Fridge Again?",
-      body: "Get it Zoorted for less than a Sausage Roll 🥴!",
+      body: "Get it Zoorted for less than a Sausage Roll 🥴!", //probably not but this is catchy!
     },
     trigger: {
-      weekday: 3, // Wednesday
+      weekday: 5, // Friday
       hour: 12,
       minute: 0,
       repeats: true,
