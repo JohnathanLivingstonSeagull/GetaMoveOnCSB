@@ -1,38 +1,41 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { getData, storeData, removeData } from "../utils/asyncStorageUtils";
+import React, { createContext, useState, useEffect } from "react";
+import { auth } from "../config/firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // figure out how to check for stored user data when the app loads
-    checkUserLoggedIn();
-  }, []);
-
-  const checkUserLoggedIn = async () => {
-    try {
-      const userData = await getData("user");
-      if (userData) {
-        setUser(userData);
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        const userData = await AsyncStorage.getItem("userData");
+        setUser(
+          userData
+            ? JSON.parse(userData)
+            : { uid: firebaseUser.uid, email: firebaseUser.email }
+        );
+      } else {
+        setUser(null);
+        await AsyncStorage.removeItem("userData");
       }
-    } catch (error) {
-      console.error("Error checking user login status:", error);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return unsubscribe;
+  }, []);
 
   const login = async (userData) => {
     setUser(userData);
-    await storeData("user", userData);
+    await AsyncStorage.setItem("userData", JSON.stringify(userData));
   };
 
   const logout = async () => {
+    await auth.signOut();
     setUser(null);
-    await removeData("user");
+    await AsyncStorage.removeItem("userData");
   };
 
   return (
@@ -41,5 +44,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
