@@ -1,0 +1,32 @@
+{
+    "expo": {
+      "name": "Zoorted",
+      "slug": "zoorted",
+      "version": "1.0.0",
+      "orientation": "portrait",
+      "icon": "./assets/roughlogo.jpg",
+      "splash": {
+        "image": "./assets/bicyle-man.png", 
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
+      "updates": {
+        "fallbackToCacheTimeout": 0
+      },
+      "assetBundlePatterns": [
+        "**/*"
+      ],
+      "ios": {
+        "supportsTablet": true
+      },
+      "android": {
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/bicyle-man.png", 
+          "backgroundColor": "#FFFFFF"
+        }
+      },
+      "web": {
+        "favicon": "./assets/bicyle-man.png" 
+      }
+    }
+  }
