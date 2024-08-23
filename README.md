@@ -1,6 +1,6 @@
 # Zoorted
 
-Zorted is a mobile application that connects customers who need items delivered with drivers who can fulfill these small item delivery requests.
+Zoorted is a mobile application that connects customers who need items delivered with drivers who can fulfill these small item delivery requests.
 
 ## Features
 

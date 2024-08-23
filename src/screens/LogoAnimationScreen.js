@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Image, Animated, StyleSheet } from 'react-native';
-import { Audio } from 'expo-av';
+import React, { useEffect, useRef } from "react";
+import { View, Text, Image, Animated, StyleSheet } from "react-native";
+import { Audio } from "expo-av";
 
 const LogoAnimationScreen = ({ navigation }) => {
   const logoPosition = useRef(new Animated.Value(-100)).current;
@@ -10,10 +10,10 @@ const LogoAnimationScreen = ({ navigation }) => {
     const animateLogo = async () => {
       const sound = new Audio.Sound();
       try {
-        await sound.loadAsync(require('../assets/zoom.mp3'));
+        await sound.loadAsync(require("../assets/zoom.mp3"));
         await sound.playAsync();
       } catch (error) {
-        console.error('Error playing sound', error);
+        console.error("Error playing sound", error);
       }
 
       Animated.sequence([
@@ -30,7 +30,7 @@ const LogoAnimationScreen = ({ navigation }) => {
       ]).start();
 
       setTimeout(() => {
-        navigation.replace('MainSelection');
+        navigation.replace("MainSelection");
       }, 2500);
     };
 
@@ -40,7 +40,7 @@ const LogoAnimationScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require('../assets/roughlogo.jpg')}
+        source={require("../assets/roughlogo.jpg")}
         style={[
           styles.logo,
           {
@@ -59,9 +59,9 @@ const LogoAnimationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff", //KEEP COLOR
   },
   logo: {
     width: 200,
@@ -70,13 +70,13 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    fontStyle: 'italic',
+    fontWeight: "bold",
+    fontStyle: "italic",
     marginBottom: 10,
   },
   subText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
