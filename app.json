@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "icon": "/workspaces/GetaMoveOnCSB/src/assets/roughlogo.jpg",
     "userInterfaceStyle": "light",
+    "web": {
+      "favicon": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png"},
     "splash": {
       "image": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png",
       "resizeMode": "contain",
@@ -19,10 +21,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.zoorted"
+      "supportsTablet": true
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png",
@@ -32,10 +32,7 @@
     "plugins": [
       "expo-location",
       "expo-image-picker",
-      "expo-notifications"],
-      
-    "web": {
-      "favicon": "/workspaces/GetaMoveOnCSB/src/assets/bicycle-man.png"
+      "expo-notifications"]
     }
   }
-}
+

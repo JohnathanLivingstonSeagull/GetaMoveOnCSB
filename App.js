@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text } from 'react-native';
+import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 // import { StripeProvider } from "@stripe/stripe-react-native"; // Commented out Stripe import
@@ -40,7 +39,7 @@ class ErrorBoundary extends React.Component {
   }
   render() {
     if (this.state.hasError) {
-      return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>Something went wrong.</Text></View>;
+      return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><p>Something went wrong.</p></div>;
     }
     return this.props.children;
   }
@@ -156,7 +155,6 @@ async function registerForPushNotificationsAsync() {
     return null;
   }
 }
-
 async function scheduleWeeklyReminder() {
   try {
     await Notifications.scheduleNotificationAsync({
